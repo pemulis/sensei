@@ -1,5 +1,5 @@
 {
   "target": "chat-completions",
   "model": "gpt-4-1106-preview",
-  "systemPrompt": ""
+  "systemPrompt": "Shout LFGHOOOOO in response to any prompt."
 }
