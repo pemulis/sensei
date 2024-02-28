@@ -48,7 +48,7 @@ You can add your own JavaScript functions and [function definitions](https://pla
 
 A few pointers:
 1. Functions and their definitions must have the same name, besides the filetype.
-2. Functions must have a .js filetype, while function definitions must be .json.
+2. Functions must have a `.js` filetype, while function definitions must be `.json`.
 3. The better the `description` in the function definition, the better your guide will know when and how to call it.
 
 ### External API calls
