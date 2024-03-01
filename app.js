@@ -222,6 +222,7 @@ async function callAssistant(prompt, session) {
         let functionArguments = Object.values(JSON.parse(tool_call.function.arguments));
         console.log("function arguments:", functionArguments);
         let response;
+        console.log("session functions:", session.functions);
         if (Object.prototype.hasOwnProperty.call(session.functions, functionName)) {
           response = await session.functions[functionName](...functionArguments);
         } else {
