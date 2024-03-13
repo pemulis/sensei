@@ -2,7 +2,7 @@ async function callBrianAPI(prompt, chainId, address) {
   const fetch = (await import('node-fetch')).default;
 
   // Endpoint URI for Brian API
-  const uri = 'https://api.brianknows.org/api/v0/agent/transaction';
+  const uri = 'https://us-api.brianknows.org/api/v0/agent/transaction';
   // Retrieve the API key from environment variables
   const apiKey = process.env.BRIAN_API_KEY;
 
