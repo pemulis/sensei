@@ -1,0 +1,214 @@
+Welcome to the Brian Prompt Engineering Guide! 
+
+This comprehensive guide aims to assist users with the necessary knowledge to craft prompts effectively for Brian. By understanding the principles outlined here, you will learn to formulate prompts that align with Brian's capabilities, ensuring optimal functionality and successful outcomes.
+
+Getting Started
+Before we dive into the examples, it’s important to understand that what makes an effective prompt in Brian is the clarity of the transaction parameters the user wants to build.
+
+Brian’s AI capabilities consist of extracting all the attributes from the prompt, effectively extracting the user's intention and building the desired transaction flow. 
+
+Actions Overview
+We currently support the following actions:
+
+Swap
+
+Bridge 
+
+Crosschain swap 
+
+Transfer 
+
+Approve 
+
+Total Supply 
+
+Balance
+
+WrapETH
+
+Each action has a set of attributes that Brian extracts to build the transaction. In your prompt, you must insert all mandatory attributes to make a successful prompt. 
+
+💸Swap
+A swap is a transaction in which the user exchanges one ERC-20 token for another. 
+
+Attributes
+action
+
+chain
+
+token1
+
+token2
+
+address
+
+amount
+
+Brian Prompt Engineering Tip: In Brian, you can swap 2 tokens and define the address of the receiver different from the one executing it. Moreover, you can define the amount both in the native value of the token you want to swap and in dollars. In the second case, Brian will make the transaction with the right amount converted from dollars to the token1 value using external API for getting price quotes at run time.
+
+Example prompt: 
+swap 0.01 weth for dai
+
+swap 0.01 eth for dai with vitalik.eth as receiver
+
+swap 20 dollars of uni for dai
+
+🌉Bridge
+A bridge connects different blockchain networks, allowing transactions between them. 
+
+Attributes
+action
+
+chain
+
+token1
+
+address
+
+amount
+
+dest_chain
+
+Brian Prompt Engineering Tip: In Brian, you can bridge and define the address of the receiver different from the one executing it. Moreover, you can define the amount both in the native value of the token you want to swap and in dollars. In the second case, Brian will make the transaction with the right amount converted from dollars to the token1 value
+
+Example prompt: 
+Bridge 0.05 eth to arbitrum
+
+Bridge 0.03 weth to polygon with vitalik.eth as receiver
+
+Bridge 10 dollars of eth to zksync
+
+⛓️Crosschain Swap
+A crosschain swap is a type of transaction that allows for the exchange of digital assets or tokens between two different blockchain networks. In a crosschain swap, the assets are transferred from one blockchain to another, enabling users to trade or swap tokens across different chains.
+
+Attributes
+action
+
+chain
+
+token1
+
+token2
+
+address
+
+amount
+
+dest_chain
+
+Brian Prompt Engineering Tip: In Brian you can make a crosschain swap and define the address of the receiver different from the one executing it. Moreover, you can define the amount both in the native value of the token you want to swap and in dollars. In the second case Brian will make the transaction with the right amount converted from dollars to the token1 value
+
+Example prompt: 
+Make a crosschain swap of 0.02 eth to dai to optimism
+
+Make a crosschain swap of 10 usdc to dai to arbitrum with 0x... as receiver
+
+Make a crosschain swap of 20 dollars of eth to dai to base
+
+➡️Transfer
+Movement of digital assets from one account to another within the blockchain network.
+
+Attributes
+action
+
+chain
+
+token1
+
+address
+
+amount
+
+Brian Prompt Engineering Tip: You can define the amount both in the native value of the token you want to swap and in dollars. In the second case Brian will make the transaction with the right amount converted from dollars to the token1 value
+
+Example prompt: 
+Transfer 1 usdc to vitalik.eth
+
+Transfer 10 dollars of eth to vitalik.eth
+
+💣Multiple operations
+Perform multiple operations in the same prompt! After the user writes the prompt, Brian will build two or more transactions that the user has to confirm.
+
+Example prompt: 
+build a portfolio of 0.5 eth and split into 5 tokens: 15% of usdc, 25% of usdt, 50% of dai, 5% of uni, 5% of link on ethereum
+
+swap 0.1 eth for dai and swap 0.1 eth for usdc
+
+transfer 1 eth to each: vitalik.eth, limone.eth, matteoikari.eth
+
+Brian Prompt Engineering Tip: in a multiple-operations prompt, currently, you have to specify all the parameters, e.g., "Bridge 1 eth from Polygon to Ethereum and swap 0.5 eth to usdc".
+
+👌Approve
+A function that allows one address to use the funds of another address within a specific contract. When you approve a contract to spend a specific amount of your tokens or assets, you are essentially permitting for that contract to transfer those assets on your behalf.
+
+Attributes
+action
+
+chain
+
+token1
+
+address
+
+amount
+
+Brian Prompt Engineering Tip: You can define the amount both in the native value of the token you want to swap and in dollars. In the second case Brian will make the transaction with the right amount converted from dollars to the token1 value
+
+Example prompt: 
+I want to approve 7.3 dai for spending to 0x9c5142ca89eac453c1eb9ef8d5e854ca01743f6e on polygon
+
+⚖️Balance
+Refers to the amount of tokens a specific address has
+
+Attributes
+action
+
+chain
+
+token1
+
+address
+
+Brian Prompt Engineering Tip: you can either specify the address or refer to your address as “my”
+
+Example prompt: 
+what is my balance of usdc?
+
+What is the balance of 0x75a08f634704c0060180c3a8e00f2b5991f2e5c9 in weth on gnosis?
+
+🏦Total Supply
+Refers to the overall amount of a specific asset that is available in circulation at any given time.
+
+Attributes
+action
+
+chain
+
+token1
+
+Example prompt: 
+
+I would like to know the total supply of euroe on GNOSIS.
+
+💠Wrap/Unwrap native token
+Wrapping ETH refers to the process of converting native ETH to wETH and viceversa
+
+Attributes
+action
+
+chain
+
+token1
+
+token2
+
+address
+
+amount
+
+Brian Prompt Engineering Tip: In Brian you can wrap eth and define the address of the receiver different from the one executing it. Moreover you can define the amount both in the native value of the token you want to swap and in dollars. In the second case Brian will make the transaction with the right amount converted from dollars to the token1 value
+
+Example prompt: 
+wrap 0.1 eth to weth
+
+wrap 10 dollars of matic on polygon
