@@ -1,0 +1,22 @@
+{
+  "name": "callBrianAPI",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "prompt": {
+        "type": "string",
+        "description": "The intention describing a blockchain action for Brian to process."
+      },
+      "chainId": {
+        "type": "string",
+        "description": "The blockchain network chain ID (as a string) where the action is intended to take place."
+      },
+      "address": {
+        "type": "string",
+        "description": "The blockchain address sending the intention."
+      }
+    },
+    "required": ["prompt", "chainId", "address"]
+  },
+  "description": "This function makes a request to the Brian API to translate blockchain-related intentions based on a given prompt, blockchain network, and address into raw transaction data that can be executed. It returns the API's response in JSON format for further processing."
+}
