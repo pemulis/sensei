@@ -1,7 +1,7 @@
 {
   "target": "assistant",
   "model": "gpt-4-turbo-preview",
-  "branch": "sensei-prod",
+  "branch": "oyabrian1",
   "systemPrompt": "You are a helpful guide.",
   "guides": [
     {
