@@ -86,7 +86,6 @@ function initializeSessionVariables(session) {
   if (!session.guide) session.guide = '';
   if (!session.thread) session.thread = '';
   if (!session.requestQueue) session.requestQueue = {};
-  console.log("session variables initialized");
 }
 
 async function initializeFunctions(session) {
@@ -124,6 +123,16 @@ async function saveMessage(role, content, guide = null, companion = null, thread
   } catch (err) {
     console.error('Error saving message to database:', err);
   }
+}
+
+function withMessageSaving(originalFunction, threadId) {
+  return async function(...args) {
+    const response = await originalFunction.apply(this, args);
+    
+    saveMessage('brian', JSON.stringify(response), null, null, threadId);
+    
+    return response;
+  };
 }
 
 async function respond(prompt, requestId, target, session) {
@@ -273,6 +282,7 @@ async function callAssistant(prompt, session) {
     localThread = await openai.beta.threads.create();
     session.thread = localThread;
     console.log("local thread created");
+    saveMessage('system', 'A new thread has been created, with thread ID: ' + localThread.id);
   }
 
   saveMessage('companion', prompt, localGuide.id, companion, localThread.id);
@@ -309,21 +319,31 @@ async function callAssistant(prompt, session) {
       let tool_calls = run.required_action.submit_tool_outputs.tool_calls;
       for (let tool_call of tool_calls) {
         let functionName = tool_call.function.name;
-        // Need to help the root guide get correct names for other guides here...
         let functionArguments = Object.values(JSON.parse(tool_call.function.arguments));
         let response;
+    
         if (Object.prototype.hasOwnProperty.call(functions, functionName)) {
-          response = await functions[functionName](...functionArguments);
+          // Declare targetFunction here to ensure it's defined
+          let targetFunction = functions[functionName];
+    
+          if (functionName === "callBrianAPI") {
+            // Wrap the function if it's callBrianAPI
+            targetFunction = withMessageSaving(functions[functionName], localThread.id);
+            // Await the response from the wrapped function
+            response = await targetFunction(...functionArguments);
+          } else {
+            // Call the function directly if it's not callBrianAPI
+            response = await targetFunction(...functionArguments);
+          }
         } else {
           response = 'We had an issue calling an external function.'
         }
+    
         console.log("function response:", response);
-        tools_outputs.push(
-          {
-            tool_call_id: tool_call.id,
-            output: JSON.stringify(response)
-          }
-        );
+        tools_outputs.push({
+          tool_call_id: tool_call.id,
+          output: JSON.stringify(response)
+        });
       }
       try {
         run = await openai.beta.threads.runs.submitToolOutputs(
