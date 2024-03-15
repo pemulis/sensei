@@ -5,23 +5,29 @@ Framework for quickly developing and deploying AI guides. Geared toward rapid de
 
 You have an [OpenAI API account](https://openai.com/blog/openai-api) and a [Heroku](https://signup.heroku.com/) account, and you have the `yarn`, `node`, and `heroku` packages installed on your machine. You will also need to have Postgres [installed locally](https://devcenter.heroku.com/articles/local-setup-heroku-postgres) and [Postgres CLI tools](https://postgresapp.com/documentation/cli-tools.html) set up.
 
-## Steps to get started
+## Getting started
 
 1. `git clone https://github.com/pemulis/sensei.git`
 2. `cd sensei`
 3. `brew install jq` (if on Mac, otherwise [follow these instructions](https://jqlang.github.io/jq/download/))
-4. `chmod +x start.sh`
-5. `./start.sh --name projectname --openai-key YOUR-OPENAI-API-KEY --session-secret YOUR-SESSION-SECRET --files "path/to/file1,path/to/file2"`
 
-This will create and check out a new project with that name, deploy it to Heroku, set it up with your OpenAI API key, add logging with the Logtail free plan, and a Heroku Postgres database under the Basic plan. Note: This will fail if the project name is not unique.
+## Creating a new branch
+
+An easy way to create and deploy multiple AIs with different behavior is to create a new branch from `main` and then modify the `sensei.json` config and application code to suit your needs.
+
+From the root of the directory:
+1. `chmod +x branch.sh` (if you haven't done this already for an earlier branch)
+2. `./branch.sh --name branchname --openai-key YOUR-OPENAI-API-KEY --session-secret YOUR-SESSION-SECRET --files "path/to/file1,path/to/file2"`
+
+This will create and check out a new branch with that name, deploy it to Heroku, set it up with your OpenAI API key, add logging with the Logtail free plan, and a Heroku Postgres database under the Basic plan. Note: This will fail if the branch name is not unique.
 
 To deploy changes to Heroku:
-`git push projectname projectname:main`
+`git push branchname branchname:main`
 
 To open the app from the command line:
-`heroku open --app projectname`.
+`heroku open --app branchname`.
 
-_Annoying sidenote:_ Only lowercase letters, digits, and dashes allowed for project names. And since we want to use project names as guide names—and hyphens are not allowed for Heroku config variables—that means no dashes. Just lowercase letters and digits. Sorry!
+_Annoying sidenote:_ Only lowercase letters, digits, and dashes allowed for branch names. And since we want to use branch names as guide names—and hyphens are not allowed for Heroku config variables—that means no dashes. Just lowercase letters and digits. Sorry!
 
 ## Config options
 
@@ -88,19 +94,9 @@ A few pointers:
 
 If you need to call external APIs as part of your function, you need to add your API key as a an environment variable in Heroku. This is done for you automatically by `start.sh` for your OpenAI API key. For other API keys, set it in the web interface, or run this:
 
-`heroku config:set NEW_API_KEY="{NEW_API_KEY}" --app "{projectname}"`
+`heroku config:set NEW_API_KEY="{NEW_API_KEY}" --app "branchname"`
 
-Your `projectname` was set when you created the project. If you forget what it is, you can find it in `sensei.json` as the value for `branch`.
-
-## Create a new branch
-
-An easy way to create and deploy multiple AIs with different behavior is to create a new branch from `main` and then modify the `sensei.json` config and application code to suit your needs.
-
-From the root of the directory:
-1. `chmod +x branch.sh`
-2. `./branch.sh --name branchname --openai-key YOUR-OPENAI-API-KEY --session-secret YOUR-SESSION-SECRET --files "path/to/file1,path/to/file2"`
-
-The `./branch.sh` script is basically the same as the `./start.sh` script, but skips running `yarn` and `heroku login`. Just like project names, the branch name must be unique to deploy successfully to Heroku.
+Your `branchname` was set when you created the branch. If you forget what it is, you can find it in `sensei.json` as the value for `branch`.
 
 ## Use GitHub workflows
 

@@ -28,6 +28,12 @@ if [ -z "$BRANCH_NAME" ] || [ -z "$OPENAI_API_KEY" ] || [ -z "$SESSION_SECRET" ]
     usage
 fi
 
+# Install dependencies
+yarn
+
+# Login to Heroku
+heroku login
+
 # Create a new branch
 git checkout -b $BRANCH_NAME
 
@@ -54,6 +60,9 @@ git commit -m "Added specific files to the files directory."
 
 # Create a new Heroku app
 heroku create $BRANCH_NAME
+
+# Add the Node.js buildpack to your Heroku application
+heroku buildpacks:add --index 1 heroku/nodejs --app "$BRANCH_NAME"
 
 # Add the FFmpeg buildpack to your Heroku application
 heroku buildpacks:add --index 1 https://github.com/jonathanong/heroku-buildpack-ffmpeg-latest.git --app "$BRANCH_NAME"
