@@ -37,7 +37,7 @@ async function callBrianAPI(prompt, address) {
 
     // Assuming the response is successful and JSON formatted
     const data = await response.json();
-    console.log("Received response from Brian API:", data);
+    console.log("Received response from Brian API:", JSON.stringify(data, null, 2));
     return data; // Pass the API response back to the caller for further processing
   } catch (error) {
     console.error("Failed to interact with the Brian API:", error);
