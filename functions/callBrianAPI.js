@@ -1,4 +1,4 @@
-async function callBrianAPI(prompt, chainId, address) {
+async function callBrianAPI(prompt, address) {
   const fetch = (await import('node-fetch')).default;
 
   // Endpoint URI for Brian API
@@ -11,7 +11,7 @@ async function callBrianAPI(prompt, chainId, address) {
     return "API key not set.";
   }
 
-  console.log(`Making request with prompt: '${prompt}', address: ${address}, and chainId: ${chainId}...`);
+  console.log(`Making request with prompt: '${prompt}' and address: ${address}`);
 
   try {
     const response = await fetch(uri, {
@@ -20,7 +20,7 @@ async function callBrianAPI(prompt, chainId, address) {
         'Content-Type': 'application/json',
         'x-brian-api-key': apiKey
       },
-      body: JSON.stringify({ prompt, address, chainId })
+      body: JSON.stringify({ prompt, address })
     });
 
     if (!response.ok) {
