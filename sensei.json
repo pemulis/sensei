@@ -1,7 +1,7 @@
 {
   "target": "assistant",
   "model": "gpt-4o",
-  "branch": "sensei-prod",
+  "branch": "oya-streaming",
   "systemPrompt": "You are a helpful guide.",
   "guides": [
     {
