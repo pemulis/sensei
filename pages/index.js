@@ -630,15 +630,6 @@ const Home = () => {
         setErrorMessage(error.message);
       }
     }
-  };  
-  
-  const displayTextResponse = (text) => {
-    const newMessage = {
-      role: 'Oya Guide',
-      content: text
-    };
-    setMessages(prevMessages => [...prevMessages, newMessage]);
-    threadContainerRef.current.scrollTop = threadContainerRef.current.scrollHeight;
   };
 
   const handleError = (error) => {
