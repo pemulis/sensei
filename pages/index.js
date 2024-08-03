@@ -394,21 +394,6 @@ const Home = () => {
     }, 2000);
   };
 
-  const playAudioFromURL = (audioUrl) => {
-    setAudioResponseUrl(audioUrl);
-    if (audioResponseRef.current) {
-      try {
-        audioResponseRef.current.play().catch(error => {
-          console.error('Error playing audio:', error);
-        });
-      } catch (error) {
-        console.error('Error in playAudioFromURL:', error);
-      }
-    } else {
-      console.error('Audio element is not available.');
-    }
-  };
-
   const handleTranscriptionResult = (data) => {
     setMessages(prevMessages => {
       const updatedMessages = [...prevMessages];
@@ -624,12 +609,6 @@ const Home = () => {
   
         console.log('Updated Balance:', updatedBalance);
         setBalance(updatedBalance);
-        const newMessage = {
-          role: 'System',
-          content: updatedBalance.toString,
-          audioUrl: null
-        };
-        setMessages(prevMessages => [...prevMessages, newMessage]);
       } catch (error) {
         console.error('Error fetching balance:', error);
         setErrorMessage(error.message);
