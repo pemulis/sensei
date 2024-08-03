@@ -571,6 +571,9 @@ const Home = () => {
   const toggleDashboard = async (e, dashboardType) => {
     if (e) e.preventDefault();
     setIsDashboardVisible(dashboardType);
+    const thanks = "Thank you, I can see my " + dashboardType + " dashboard now.";
+    displayPrompt(thanks);
+    sendPromptToBackend(thanks);
   
     if (dashboardType === 'balance' || dashboardType === 'rewards') {
       try {
