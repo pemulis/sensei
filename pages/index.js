@@ -623,8 +623,13 @@ const Home = () => {
         });
   
         console.log('Updated Balance:', updatedBalance);
-  
         setBalance(updatedBalance);
+        const newMessage = {
+          role: 'System',
+          content: updatedBalance,
+          audioUrl: null
+        };
+        setMessages(prevMessages => [...prevMessages, newMessage]);
       } catch (error) {
         console.error('Error fetching balance:', error);
         setErrorMessage(error.message);
