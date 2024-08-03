@@ -66,6 +66,15 @@ Example:
 }
 ```
 
+## Regex to Trigger Specific Frontend Features
+
+You can see a regex node in the above example file. 
+
+Sensei will use the regex patterns to search the AI guide responses, and if a match is found it will trigger actions on the React frontend, like pulling up a dashboard or initiating a crypto transaction. 
+
+_Note that a lot of the newer code in the repo is only relevant to our project, and could be stripped out or ignored if you are using Sensei to build something else. Using regex to let the AI responses trigger frontend functions is a powerful (but optional) feature. Leave the array empty if you don't need it._
+
+
 For the guides to work, you will need to define a URI endpoint with the same exact name in your environment variables. For example:
 
 ```catfoodexpert=https://cat-food-expert.com```
