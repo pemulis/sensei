@@ -626,7 +626,7 @@ const Home = () => {
         setBalance(updatedBalance);
         const newMessage = {
           role: 'System',
-          content: updatedBalance,
+          content: updatedBalance.toString,
           audioUrl: null
         };
         setMessages(prevMessages => [...prevMessages, newMessage]);
