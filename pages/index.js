@@ -279,7 +279,7 @@ const Home = () => {
       from: wallet.address,
       bundler: '0x42fA5d9E5b0B1c039b08853cF62f8E869e8E5bAf',
       expiry: 1734752013,
-      nonce: 0 // need to track this internally, in the database
+      nonce: 0 // need to pull this from the api server
     };
 
     const uiConfig = {
