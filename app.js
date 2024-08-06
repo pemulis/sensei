@@ -738,7 +738,45 @@ async function main() {
         console.error('Error fetching balance:', error);
         res.status(500).json({ message: 'Server error' });
       }
-    });   
+    });
+
+    app.get('/api/nonce/:address', async (req, res) => {
+      const { address } = req.params;
+    
+      if (!address) {
+        return res.status(400).json({ message: 'Address is required' });
+      }
+    
+      try {
+        const response = await fetch(`${process.env.OYA_API_SERVER}/nonce/${address}`);
+        const data = await response.json();
+        console.log("Got nonce:", data);
+        res.status(200).json(data);
+      } catch (error) {
+        console.error('Error fetching nonce:', error);
+        res.status(500).json({ message: 'Server error' });
+      }
+    });
+
+    app.post('/api/nonce/:address', async (req, res) => {
+      const { address } = req.params;
+    
+      if (!address) {
+        return res.status(400).json({ message: 'Address is required' });
+      }
+    
+      try {
+        const response = await fetch(`${process.env.OYA_API_SERVER}/nonce/${address}`, {
+          method: 'POST',
+        });
+        const data = await response.json();
+        console.log("New nonce:", data);
+        res.status(200).json(data);
+      } catch (error) {
+        console.error('Error posting nonce:', error);
+        res.status(500).json({ message: 'Server error' });
+      }
+    });
     
     app.get('/api/token-prices', async (req, res) => {
       const tokenIds = 'ethereum,weth,usd-coin,uma';
