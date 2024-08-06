@@ -377,7 +377,8 @@ const Home = () => {
         ));
       }
     }
-  };  
+  };
+  
 
   const updateContact = async (e, contactObject) => {
     if (e) e.preventDefault();
