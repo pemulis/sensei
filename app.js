@@ -767,7 +767,7 @@ async function main() {
         console.error('Error fetching nonce:', error.message);
         res.status(500).json({ message: 'Server error', error: error.message });
       }
-    });    
+    });      
     
     app.post('/api/nonce/:address', async (req, res) => {
       const { address } = req.params;
@@ -789,7 +789,7 @@ async function main() {
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ account: address, nonce }) // Send account and nonce in the body
+          body: JSON.stringify({ nonce }) // Send nonce in the body
         });
     
         if (response.status === 404) {
