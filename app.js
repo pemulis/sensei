@@ -752,6 +752,11 @@ async function main() {
         console.log(`Fetching nonce from: ${apiUrl}`);
         const response = await fetch(apiUrl);
         
+        if (response.status === 404) {
+          // Nonce not found
+          return res.status(404).json({ message: 'Nonce not found' });
+        }
+    
         if (!response.ok) {
           throw new Error(`Failed to fetch nonce: ${response.statusText}`);
         }
@@ -794,7 +799,7 @@ async function main() {
         console.error('Error posting nonce:', error.message);
         res.status(500).json({ message: 'Server error', error: error.message });
       }
-    });    
+    });      
     
     app.get('/api/token-prices', async (req, res) => {
       const tokenIds = 'ethereum,weth,usd-coin,uma';
