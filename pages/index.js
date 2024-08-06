@@ -280,9 +280,9 @@ const Home = () => {
       const response = await fetch(`/api/nonce/${wallet.address}`);
       if (response.ok) {
         // If the response is good, increment the nonce
-        nonce = await response.json();
-        console.log('Fetched nonce:', nonce);
-        nonce += 1;
+        const data = await response.json();
+        console.log('Fetched nonce:', data);
+        nonce = parseInt(data.nonce, 10) + 1;
       } else if (response.status === 404) {
         // If there is no nonce, set it to 0 and send a POST request to set the nonce to 0
         nonce = 0;
@@ -299,6 +299,7 @@ const Home = () => {
         }
   
         console.log('Set nonce to 0');
+        nonce = 1; // Since we know we're starting from 0, the next nonce should be 1
       } else {
         throw new Error('Failed to fetch nonce');
       }
@@ -315,7 +316,7 @@ const Home = () => {
       from: wallet.address,
       bundler: '0x42fA5d9E5b0B1c039b08853cF62f8E869e8E5bAf',
       expiry: 1734752013,
-      nonce: nonce
+      nonce: nonce // Ensure nonce is a number
     };
   
     const uiConfig = {
@@ -378,7 +379,6 @@ const Home = () => {
       }
     }
   };
-  
 
   const updateContact = async (e, contactObject) => {
     if (e) e.preventDefault();
