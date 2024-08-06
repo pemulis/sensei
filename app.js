@@ -772,9 +772,14 @@ async function main() {
     
     app.post('/api/nonce/:address', async (req, res) => {
       const { address } = req.params;
+      const { nonce } = req.body;
     
       if (!address) {
         return res.status(400).json({ message: 'Address is required' });
+      }
+    
+      if (nonce === undefined) {
+        return res.status(400).json({ message: 'Nonce is required' });
       }
     
       try {
@@ -785,7 +790,7 @@ async function main() {
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ nonce: 0 })
+          body: JSON.stringify({ account: address, nonce }) // Send nonce and account in the body
         });
     
         if (response.status === 404) {
@@ -804,7 +809,7 @@ async function main() {
         console.error('Error posting nonce:', error.message);
         res.status(500).json({ message: 'Server error', error: error.message });
       }
-    });      
+    });   
     
     app.get('/api/token-prices', async (req, res) => {
       const tokenIds = 'ethereum,weth,usd-coin,uma';

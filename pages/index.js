@@ -276,7 +276,7 @@ const Home = () => {
   
     let nonce;
     try {
-      // Fetch the nonce from the remote API server
+      // Fetch the nonce from the middleware API server
       const response = await fetch(`/api/nonce/${wallet.address}`);
       if (response.ok) {
         // If the response is good, increment the nonce
@@ -291,7 +291,7 @@ const Home = () => {
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ nonce })
+          body: JSON.stringify({ nonce }) // Send nonce in the body
         });
   
         if (!postResponse.ok) {
