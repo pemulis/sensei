@@ -753,7 +753,6 @@ async function main() {
         const response = await fetch(apiUrl);
         
         if (response.status === 404) {
-          // Nonce not found
           return res.status(404).json({ message: 'Nonce not found' });
         }
     
@@ -768,7 +767,7 @@ async function main() {
         console.error('Error fetching nonce:', error.message);
         res.status(500).json({ message: 'Server error', error: error.message });
       }
-    });
+    });    
     
     app.post('/api/nonce/:address', async (req, res) => {
       const { address } = req.params;
@@ -790,11 +789,10 @@ async function main() {
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ account: address, nonce }) // Send nonce and account in the body
+          body: JSON.stringify({ account: address, nonce }) // Send account and nonce in the body
         });
     
         if (response.status === 404) {
-          // Handle the case where the endpoint is not found
           throw new Error(`Endpoint not found: ${apiUrl}`);
         }
     
@@ -809,7 +807,7 @@ async function main() {
         console.error('Error posting nonce:', error.message);
         res.status(500).json({ message: 'Server error', error: error.message });
       }
-    });   
+    });    
     
     app.get('/api/token-prices', async (req, res) => {
       const tokenIds = 'ethereum,weth,usd-coin,uma';
