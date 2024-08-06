@@ -787,7 +787,12 @@ async function main() {
           },
           body: JSON.stringify({ nonce: 0 })
         });
-        
+    
+        if (response.status === 404) {
+          // Handle the case where the endpoint is not found
+          throw new Error(`Endpoint not found: ${apiUrl}`);
+        }
+    
         if (!response.ok) {
           throw new Error(`Failed to post nonce: ${response.statusText}`);
         }
