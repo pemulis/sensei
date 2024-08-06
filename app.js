@@ -748,16 +748,23 @@ async function main() {
       }
     
       try {
-        const response = await fetch(`${process.env.OYA_API_SERVER}/nonce/${address}`);
+        const apiUrl = `${process.env.OYA_API_SERVER}/nonce/${address}`;
+        console.log(`Fetching nonce from: ${apiUrl}`);
+        const response = await fetch(apiUrl);
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch nonce: ${response.statusText}`);
+        }
+    
         const data = await response.json();
         console.log("Got nonce:", data);
         res.status(200).json(data);
       } catch (error) {
-        console.error('Error fetching nonce:', error);
-        res.status(500).json({ message: 'Server error' });
+        console.error('Error fetching nonce:', error.message);
+        res.status(500).json({ message: 'Server error', error: error.message });
       }
     });
-
+    
     app.post('/api/nonce/:address', async (req, res) => {
       const { address } = req.params;
     
@@ -766,17 +773,28 @@ async function main() {
       }
     
       try {
-        const response = await fetch(`${process.env.OYA_API_SERVER}/nonce/${address}`, {
+        const apiUrl = `${process.env.OYA_API_SERVER}/nonce/${address}`;
+        console.log(`Posting nonce to: ${apiUrl}`);
+        const response = await fetch(apiUrl, {
           method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ nonce: 0 })
         });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to post nonce: ${response.statusText}`);
+        }
+    
         const data = await response.json();
         console.log("New nonce:", data);
         res.status(200).json(data);
       } catch (error) {
-        console.error('Error posting nonce:', error);
-        res.status(500).json({ message: 'Server error' });
+        console.error('Error posting nonce:', error.message);
+        res.status(500).json({ message: 'Server error', error: error.message });
       }
-    });
+    });    
     
     app.get('/api/token-prices', async (req, res) => {
       const tokenIds = 'ethereum,weth,usd-coin,uma';
