@@ -53,6 +53,7 @@ const Home = () => {
   const [balance, setBalance] = useState([]);
   const [tokenPrices, setTokenPrices] = useState({});
   const [messages, setMessages] = useState([]); // Track all messages with audio
+  const [nonce, setNonce] = useState([]);
   const audioPromptRef = useRef();
   const audioResponseRef = useRef();
   const threadContainerRef = useRef();
@@ -272,25 +273,60 @@ const Home = () => {
     }
     console.info("Wallets:", wallets);
     const wallet = wallets[0];
-
+  
+    let nonce;
+    try {
+      // Fetch the nonce from the remote API server
+      const response = await fetch(`/api/nonce/${wallet.address}`);
+      if (response.ok) {
+        // If the response is good, increment the nonce
+        nonce = await response.json();
+        console.log('Fetched nonce:', nonce);
+        nonce += 1;
+      } else if (response.status === 404) {
+        // If there is no nonce, set it to 0 and send a POST request to set the nonce to 0
+        nonce = 0;
+        const postResponse = await fetch(`/api/nonce/${wallet.address}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ nonce })
+        });
+  
+        if (!postResponse.ok) {
+          throw new Error('Failed to set nonce to 0');
+        }
+  
+        console.log('Set nonce to 0');
+      } else {
+        throw new Error('Failed to fetch nonce');
+      }
+      setNonce(nonce);
+    } catch (error) {
+      console.error('Error fetching nonce:', error);
+      setErrorMessage(error.message);
+      return; // Exit the function if there's an error fetching or setting the nonce
+    }
+  
     // Construct the message object using the action parameter and environment variables
     const message = {
       action: action,
       from: wallet.address,
       bundler: '0x42fA5d9E5b0B1c039b08853cF62f8E869e8E5bAf',
       expiry: 1734752013,
-      nonce: 0 // need to pull this from the api server
+      nonce: nonce
     };
-
+  
     const uiConfig = {
       title: 'Intention Check',
       description: 'Please sign this message if it matches what you want to do. After you sign, it will be sent to the bundler to be executed on the Oya virtual chain.',
       buttonText: 'Sign and Continue',
     };
-    
+  
     // Add the initial message with a "Signed" status
     setIntentions(prevIntentions => [...prevIntentions, { message, status: 'Signed' }]);
-
+  
     try {
       const signature = await signMessage(JSON.stringify(message), uiConfig);
       const response = await fetch('/api/send-signed-intention', {
@@ -304,18 +340,18 @@ const Home = () => {
           from: wallet.address,
         }),
       });
-
+  
       if (!response.ok) {
         throw new Error('Something went wrong when sending the intention to bundler server.');
       }
-
+  
       const result = await response.json();
       console.log('Intention processed:\n', result);
       setErrorMessage('');
       const thanks = "Thank you, I signed and sent the intention to the Oya bundler, and it is now pending. The bundler has reviewed it and queued it for inclusion in a bundle.";
       displayPrompt(thanks);
       sendPromptToBackend(thanks);
-
+  
       // Update the intention status to "Pending"
       setIntentions(prevIntentions => prevIntentions.map(intent => 
         intent.message === message ? { ...intent, status: 'Pending' } : intent
@@ -323,10 +359,10 @@ const Home = () => {
     } catch (error) {
       console.error('Sign message error:', error);
       setErrorMessage(error.message);
-      if (error.message == 'The user rejected the request.') {
+      if (error.message === 'The user rejected the request.') {
         displayPrompt("The account holder rejected the request.");
         sendPromptToBackend(error.message + ' Please ask clarifying questions instead of returning an intention object.');
-
+  
         // Update the intention status to "Rejected"
         setIntentions(prevIntentions => prevIntentions.map(intent => 
           intent.message === message ? { ...intent, status: 'Rejected' } : intent
@@ -334,14 +370,14 @@ const Home = () => {
       } else {
         displayPrompt(error.message);
         sendPromptToBackend(error.message);
-
+  
         // Update the intention status to "Error When Signing"
         setIntentions(prevIntentions => prevIntentions.map(intent => 
           intent.message === message ? { ...intent, status: 'Error When Signing' } : intent
         ));
       }
     }
-  };
+  };  
 
   const updateContact = async (e, contactObject) => {
     if (e) e.preventDefault();
