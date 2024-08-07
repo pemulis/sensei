@@ -72,10 +72,10 @@ ALTER TABLE "session" ADD CONSTRAINT "session_pkey" PRIMARY KEY ("sid") NOT DEFE
 DROP TABLE IF EXISTS prompts;
 CREATE TABLE IF NOT EXISTS prompts (
   id SERIAL PRIMARY KEY,
-  account TEXT NOT NULL,
+  companion VARCHAR(255) NOT NULL,
   prompt TEXT NOT NULL,
   timestamp TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE (account)
+  UNIQUE (companion)
 );
 EOF
 

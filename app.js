@@ -35,26 +35,38 @@ async function initializeFullInstructions(session) {
       acc[contact.contact] = contact.address;
       return acc;
     }, {});
-
     contactsString = JSON.stringify(contactDetailsObject);
   } catch (err) {
     console.error('Error fetching contacts from database:', err);
   }
 
-  if (sensei.systemPromptPersonal && sensei.systemPromptFunctional) {
-    if (sensei.guides) {
-      const guideDetailsObject = sensei.guides.reduce((acc, guide) => {
-        acc[guide.name] = guide.description;
-        return acc;
-      }, {});
-
-      const guideDetailsString = JSON.stringify(guideDetailsObject);
-
-      fullInstructions = `${sensei.systemPromptPersonal} ${sensei.systemPromptFunctional} These are the specialized guides available to you through the callGuide function: ${guideDetailsString}. Here are the contacts and their Ethereum addresses: ${contactsString}`;
-    } else {
-      fullInstructions = `${sensei.systemPromptPersonal} ${sensei.systemPromptFunctional} Here are the contacts and their Ethereum addresses: ${contactsString}`;
+  let personalPrompt = '';
+  try {
+    const promptResult = await pool.query('SELECT prompt FROM prompts WHERE companion = $1', [session.companion]);
+    if (promptResult.rows.length > 0) {
+      personalPrompt = promptResult.rows[0].prompt;
+    } else if (sensei.systemPromptPersonal) {
+      personalPrompt = sensei.systemPromptPersonal;
     }
+  } catch (err) {
+    console.error('Error fetching personal prompt from database:', err);
   }
+
+  let guideDetailsString = '';
+  if (sensei.guides) {
+    const guideDetailsObject = sensei.guides.reduce((acc, guide) => {
+      acc[guide.name] = guide.description;
+      return acc;
+    }, {});
+    guideDetailsString = JSON.stringify(guideDetailsObject);
+  }
+
+  fullInstructions = `${sensei.systemPromptFunctional}`;
+  if (personalPrompt) {
+    fullInstructions += ` ${personalPrompt}`;
+  }
+  fullInstructions += ` Here are the specialized guides available to you through the callGuide function: ${guideDetailsString}.`;
+  fullInstructions += ` Here are the contacts and their Ethereum addresses: ${contactsString}.`;
 }
 
 async function initializeSessionVariables(req) {
@@ -567,15 +579,47 @@ async function main() {
     }
   });
 
-  app.get('/api/system-prompt', (req, res) => {
+  app.get('/api/system-prompt', async (req, res) => {
     if (!req.session.companion) {
       return res.status(403).json({ message: 'User not authenticated' });
     }
     
     if (fullInstructions) {
-      res.status(200).json({ prompt: fullInstructions });
-    } else {
-      res.status(500).json({ error: 'System prompt not available' });
+      try {
+        const promptResult = await pool.query('SELECT prompt FROM prompts WHERE companion = $1', [req.session.companion]);
+        if (promptResult.rows.length > 0) {
+          fullInstructions = promptResult.rows[0].prompt + " " + fullInstructions;
+        } else if (sensei.systemPromptPersonal) {
+          fullInstructions = sensei.systemPromptPersonal + " " + fullInstructions;
+        }
+        res.status(200).json({ prompt: fullInstructions });
+      } catch (error) {
+        res.status(500).json({ error: 'System prompt not available' });
+      }
+    }
+  });
+
+  app.post('/api/system-prompt', async (req, res) => {
+    const { prompt } = req.body;
+
+    if (!prompt) {
+      return res.status(400).json({ message: 'Prompt is required' });
+    }
+
+    if (!req.session.companion) {
+      return res.status(403).json({ message: 'User not authenticated' });
+    }
+
+    try {
+      await pool.query(
+        'INSERT INTO prompts (companion, prompt) VALUES ($1, $2) ON CONFLICT (companion) DO UPDATE SET prompt = $2',
+        [req.session.companion, prompt]
+      );
+      await initializeFullInstructions(req.session);
+      res.status(200).json({ message: 'System prompt updated' });
+    } catch (error) {
+      console.error('Error updating system prompt:', error);
+      res.status(500).json({ message: 'Server error' });
     }
   });
 
