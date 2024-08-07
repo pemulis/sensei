@@ -632,16 +632,16 @@ const Home = () => {
       if (response.ok) {
         setVisibleForm(''); // Hide the form after submission
         fetchSystemPrompt(); // Fetch the updated system prompt
-  
+
         // Create a new message informing about the updated system prompt
         const informMessage = `System prompt has been updated to: ${systemPrompt}`;
-  
+
         // Update the messages state to show the new message in the thread
         setMessages(prevMessages => [...prevMessages, {
           role: 'System',
           content: informMessage,
         }]);
-  
+
         // Send the message to the backend
         await sendPromptToBackend(informMessage);
       } else {
@@ -652,7 +652,7 @@ const Home = () => {
       console.error('Error updating system prompt:', error);
       setErrorMessage(error.message);
     }
-  };  
+  };
 
   return (
     <div className={styles.container}>
@@ -784,7 +784,7 @@ const Home = () => {
           name="systemPrompt"
           rows="10"
           cols="60"
-          value={systemPrompt}
+          value=""
           onChange={(e) => setSystemPrompt(e.target.value)}
         ></textarea>
         <button type="submit">Update</button>
