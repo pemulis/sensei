@@ -42,8 +42,6 @@ const Home = () => {
   const [audioPromptUrl, setAudioPromptUrl] = useState('');
   const [audioResponseUrl, setAudioResponseUrl] = useState('');
   const [prompt, setPrompt] = useState('');
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
   const [visibleForm, setVisibleForm] = useState(''); // Track which form is visible
   const [errorMessage, setErrorMessage] = useState(''); // Track the error message
   const [isDashboardVisible, setIsDashboardVisible] = useState(''); // Track the dashboard visibility and type
@@ -173,80 +171,31 @@ const Home = () => {
     } catch (error) {
       console.error('Error sending prompt:', error);
     }
-  };  
-
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await fetch('/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name: username, password }),
-      });
-
-      if (!response.ok) {
-        const contentType = response.headers.get("content-type");
-        if (contentType && contentType.indexOf("application/json") !== -1) {
-          const data = await response.json();
-          throw new Error(data.message || 'Registration failed');
-        } else {
-          throw new Error('Server error');
-        }
-      }
-
-      const data = await response.json();
-      console.log('Registration successful', data);
-      setErrorMessage('');
-    } catch (error) {
-      console.error('Error:', error);
-      setErrorMessage(error.message);
-    }
-  };
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await fetch('/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name: username, password }),
-      });
-
-      if (!response.ok) {
-        const contentType = response.headers.get("content-type");
-        if (contentType && contentType.indexOf("application/json") !== -1) {
-          const data = await response.json();
-          throw new Error(data.message || 'Login failed');
-        } else {
-          throw new Error('Server error');
-        }
-      }
-
-      const data = await response.json();
-      console.log('Login successful', data);
-      setErrorMessage('');
-    } catch (error) {
-      console.error('Error:', error);
-      setErrorMessage(error.message);
-    }
   };
 
   const handlePrivyLogin = async (e) => {
     e.preventDefault();
     if (!ready || (ready && authenticated)) return;
-
+  
     try {
       await login();
+      const wallet = wallets[0]; // Assuming the user has at least one wallet connected
+  
+      // Save user information to the backend
+      await fetch('/api/save-account', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ address: wallet.address }),
+      });
+  
       setErrorMessage('');
     } catch (error) {
       console.error('Privy login error:', error);
       setErrorMessage(error.message);
     }
-  };
+  };  
 
   const handlePrivyLogout = async (e) => {
     e.preventDefault();
@@ -695,22 +644,6 @@ const Home = () => {
             <label htmlFor="prompt">Enter your prompt:</label>
             <textarea id="prompt" name="prompt" rows="10" cols="60" value={prompt} onChange={(e) => setPrompt(e.target.value)}></textarea>
             <button type="submit">Send</button>
-          </form>
-
-          <form id="registerForm" className={visibleForm === 'register' ? '' : styles.hidden} onSubmit={handleRegister}>
-            <label htmlFor="username">Username:</label>
-            <input type="text" id="registerUsername" name="username" value={username} onChange={(e) => setUsername(e.target.value)} required />
-            <label htmlFor="password">Password:</label>
-            <input type="password" id="registerPassword" name="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-            <button type="submit">Register</button>
-          </form>
-
-          <form id="loginForm" className={visibleForm === 'login' ? '' : styles.hidden} onSubmit={handleLogin}>
-            <label htmlFor="username">Username:</label>
-            <input type="text" id="loginUsername" name="username" value={username} onChange={(e) => setUsername(e.target.value)} required />
-            <label htmlFor="password">Password:</label>
-            <input type="password" id="loginPassword" name="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-            <button type="submit">Log in</button>
           </form>
 
           <button type="button" onClick={() => showForm('chat')}>Show Chat Form</button>

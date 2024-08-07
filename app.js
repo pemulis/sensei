@@ -827,6 +827,30 @@ async function main() {
       }
     });
 
+    app.post('/api/save-account', async (req, res) => {
+      const { address } = req.body;
+    
+      if (!address) {
+        return res.status(400).json({ message: 'Address is required' });
+      }
+    
+      try {
+        const result = await pool.query(
+          "INSERT INTO companions (address, created_at) VALUES ($1, NOW()) ON CONFLICT (address) DO NOTHING RETURNING *",
+          [address]
+        );
+    
+        if (result.rows.length === 0) {
+          return res.status(200).json({ message: 'Account already exists' });
+        }
+    
+        res.status(201).json({ message: 'Account saved successfully' });
+      } catch (error) {
+        console.error('Error saving account:', error);
+        res.status(500).json({ message: 'Server error' });
+      }
+    });      
+
     // All other routes handled by Next.js
     app.get('*', (req, res) => {
       return handle(req, res);
