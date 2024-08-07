@@ -630,16 +630,15 @@ const Home = () => {
       });
       const data = await response.json();
       if (response.ok) {
-        setSystemPrompt(data.prompt);
         setVisibleForm(''); // Hide the form after submission
         fetchSystemPrompt(); // Fetch the updated system prompt
   
         // Create a new message informing about the updated system prompt
-        const informMessage = `System prompt has been updated to: ${data.prompt}`;
+        const informMessage = `System prompt has been updated to: ${systemPrompt}`;
   
         // Update the messages state to show the new message in the thread
         setMessages(prevMessages => [...prevMessages, {
-          role: 'Companion',
+          role: 'System',
           content: informMessage,
         }]);
   
