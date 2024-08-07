@@ -48,7 +48,7 @@ CREATE TABLE contacts (
     id SERIAL PRIMARY KEY,
     contact VARCHAR(255),
     address VARCHAR(255) UNIQUE,
-    companion VARCHAR(255), -- Added companion field
+    companion VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

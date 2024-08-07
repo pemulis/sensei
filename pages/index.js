@@ -77,9 +77,9 @@ const Home = () => {
         console.error('Error fetching system prompt:', error);
       }
     };
-
+  
     fetchSystemPrompt();
-  }, []);
+  }, []);  
 
   // Assign the functions to the window object
   useEffect(() => {

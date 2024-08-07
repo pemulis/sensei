@@ -39,7 +39,7 @@ const handle = nextApp.getRequestHandler();
 async function initializeFullInstructions() {
   let contactsString = '';
   try {
-    const contactsResult = await pool.query('SELECT contact, address FROM contacts');
+    const contactsResult = await pool.query('SELECT contact, address FROM contacts WHERE companion = $1', [req.session.companion]);
     const contacts = contactsResult.rows;
     const contactDetailsObject = contacts.reduce((acc, contact) => {
       acc[contact.contact] = contact.address;
@@ -615,49 +615,54 @@ async function main() {
       }
     });
 
+    // Update the /api/update-contact endpoint in app.js
     app.post('/api/update-contact', async (req, res) => {
       const { contact, address } = req.body; // Destructure contact and address directly from req.body
-    
+
       if (!contact || !address) {
         return res.status(400).json({ message: 'Contact and address are required' });
       }
-    
+
+      if (!req.session.companion) {
+        return res.status(403).json({ message: 'User not authenticated' });
+      }
+
       try {
-        // Check if the contact name already exists
-        const existingContact = await pool.query("SELECT * FROM contacts WHERE contact = $1", [contact]);
-        
+        // Check if the contact name already exists for the companion
+        const existingContact = await pool.query("SELECT * FROM contacts WHERE contact = $1 AND companion = $2", [contact, req.session.companion]);
+
         if (existingContact.rows.length > 0) {
           // If contact name exists, update the address
           console.log("Trying to update contact...");
           const result = await pool.query(
-            "UPDATE contacts SET address = $2 WHERE contact = $1 RETURNING *",
-            [contact, address]
+            "UPDATE contacts SET address = $2 WHERE contact = $1 AND companion = $3 RETURNING *",
+            [contact, address, req.session.companion]
           );
         } else {
           // If contact name does not exist, insert a new contact
           console.log("Trying to create new contact...");
           const result = await pool.query(
-            "INSERT INTO contacts (contact, address) VALUES ($1, $2) RETURNING *",
-            [contact, address]
+            "INSERT INTO contacts (contact, address, companion) VALUES ($1, $2, $3) RETURNING *",
+            [contact, address, req.session.companion]
           );
         }
 
         // Re-initialize full instructions
         await initializeFullInstructions();
 
-        // Fetch the updated list of contacts
-        const contactsResult = await pool.query('SELECT contact, address FROM contacts');
+        // Fetch the updated list of contacts for the logged-in companion
+        const contactsResult = await pool.query('SELECT contact, address FROM contacts WHERE companion = $1', [req.session.companion]);
         const contacts = contactsResult.rows.reduce((acc, contact) => {
           acc[contact.contact] = contact.address;
           return acc;
         }, {});
-        
+
         res.status(200).json({ message: 'Contact updated', contacts });
       } catch (error) {
         console.error('Error updating contact:', error);
         res.status(500).json({ message: "Server error" });
       }
-    });    
+    });
 
     app.get('/api/system-prompt', (req, res) => {
       if (fullInstructions) {
