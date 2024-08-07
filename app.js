@@ -696,6 +696,20 @@ async function main() {
       console.error('Error saving account:', error);
       res.status(500).json({ message: 'Server error' });
     }
+  });
+
+  app.get('/api/messages', async (req, res) => {
+    if (!req.session.companion) {
+      return res.status(403).json({ message: 'User not authenticated' });
+    }
+  
+    try {
+      const result = await pool.query('SELECT * FROM messages WHERE companion = $1 ORDER BY created_at DESC', [req.session.companion]);
+      res.status(200).json(result.rows);
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
   });  
 
   app.get('*', (req, res) => {
