@@ -180,6 +180,7 @@ const Home = () => {
     try {
       await login();
       const wallet = wallets[0]; // Assuming the user has at least one wallet connected
+      console.log('Wallet connected:', wallet);
   
       // Save user information to the backend
       const account = await fetch('/api/save-account', {
