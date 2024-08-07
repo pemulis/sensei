@@ -56,30 +56,30 @@ const Home = () => {
   const audioStreamRef = useRef(null); // useRef for audio stream
 
   // Fetch the system prompt when the component mounts
-  useEffect(() => {
-    const fetchSystemPrompt = async () => {
-      try {
-        const response = await fetch('/api/system-prompt');
-        const data = await response.json();
-        if (response.ok) {
-          setSystemPrompt(data.prompt);
-          console.log('System Prompt:', data.prompt);
-          const contactsStringMatch = data.prompt.match(/Here are the contacts and their Ethereum addresses: (.+)/);
-          if (contactsStringMatch && contactsStringMatch[1]) {
-            const contactsObject = JSON.parse(contactsStringMatch[1]);
-            setContacts(contactsObject);
-            console.log('Contacts Object:', contactsObject);
-          }
-        } else {
-          console.error('Error fetching system prompt:', data.error);
+  const fetchSystemPrompt = async () => {
+    try {
+      const response = await fetch('/api/system-prompt');
+      const data = await response.json();
+      if (response.ok) {
+        setSystemPrompt(data.prompt);
+        console.log('System Prompt:', data.prompt);
+        const contactsStringMatch = data.prompt.match(/Here are the contacts and their Ethereum addresses: (.+)/);
+        if (contactsStringMatch && contactsStringMatch[1]) {
+          const contactsObject = JSON.parse(contactsStringMatch[1]);
+          setContacts(contactsObject);
+          console.log('Contacts Object:', contactsObject);
         }
-      } catch (error) {
-        console.error('Error fetching system prompt:', error);
+      } else {
+        console.error('Error fetching system prompt:', data.error);
       }
-    };
-  
+    } catch (error) {
+      console.error('Error fetching system prompt:', error);
+    }
+  };
+
+  useEffect(() => {
     fetchSystemPrompt();
-  }, []);  
+  }, []);
 
   // Assign the functions to the window object
   useEffect(() => {
@@ -92,50 +92,27 @@ const Home = () => {
     const privyLogin = async () => {
       if (authenticated && wallets.length > 0) {
         const wallet = wallets[0];
-  
+
         try {
-          const response = await fetch('/api/privy-login', {
+          await fetch('/api/privy-login', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({ address: wallet.address }),
           });
-  
-          const data = await response.json();
-  
-          if (response.ok) {
-            setErrorMessage('');
-  
-            // Fetch the system prompt and contacts after successful login
-            const systemPromptResponse = await fetch('/api/system-prompt');
-            const systemPromptData = await systemPromptResponse.json();
-  
-            if (systemPromptResponse.ok) {
-              setSystemPrompt(systemPromptData.prompt);
-              console.log('System Prompt:', systemPromptData.prompt);
-  
-              const contactsStringMatch = systemPromptData.prompt.match(/Here are the contacts and their Ethereum addresses: (.+)/);
-              if (contactsStringMatch && contactsStringMatch[1]) {
-                const contactsObject = JSON.parse(contactsStringMatch[1]);
-                setContacts(contactsObject);
-                console.log('Contacts Object:', contactsObject);
-              }
-            } else {
-              console.error('Error fetching system prompt:', systemPromptData.error);
-            }
-          } else {
-            setErrorMessage(data.message || 'Error during login');
-          }
+
+          setErrorMessage('');
+          fetchSystemPrompt(); // Fetch the system prompt after successful login to get contacts
         } catch (error) {
           console.error('Error handling Privy login:', error);
           setErrorMessage(error.message);
         }
       }
     };
-  
+
     privyLogin();
-  }, [authenticated, wallets]);  
+  }, [authenticated, wallets]);
 
   const handleStopRecording = () => {
     if (recorderRef.current) {
