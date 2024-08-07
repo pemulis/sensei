@@ -182,13 +182,14 @@ const Home = () => {
       const wallet = wallets[0]; // Assuming the user has at least one wallet connected
   
       // Save user information to the backend
-      await fetch('/api/save-account', {
+      const account = await fetch('/api/save-account', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ address: wallet.address }),
       });
+      console.log('Account saved or retrieved:', account);
   
       setErrorMessage('');
     } catch (error) {

@@ -838,6 +838,7 @@ async function main() {
         // Check if the account already exists
         const checkAccount = await pool.query("SELECT * FROM companions WHERE address = $1", [address]);
         if (checkAccount.rows.length > 0) {
+          console.log('Account already exists:', checkAccount.rows[0]);
           return res.status(200).json({ message: 'Account already exists' });
         }
     
@@ -846,6 +847,7 @@ async function main() {
           "INSERT INTO companions (address, created_at) VALUES ($1, NOW()) RETURNING *",
           [address]
         );
+        console.log("Account saved:", result.rows[0]);
     
         res.status(201).json({ message: 'Account saved successfully' });
       } catch (error) {
