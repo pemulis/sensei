@@ -91,6 +91,31 @@ const Home = () => {
     window.toggleDashboard = (e, dashboardType) => toggleDashboard(e, dashboardType);
   }, [wallets]);
 
+  useEffect(() => {
+    const saveAccount = async () => {
+      if (authenticated && wallets.length > 0) {
+        const wallet = wallets[0];
+
+        try {
+          await fetch('/api/save-account', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ address: wallet.address }),
+          });
+
+          setErrorMessage('');
+        } catch (error) {
+          console.error('Error saving account:', error);
+          setErrorMessage(error.message);
+        }
+      }
+    };
+
+    saveAccount();
+  }, [authenticated, wallets]);
+
   const handleStopRecording = () => {
     if (recorderRef.current) {
       recorderRef.current.stop();
@@ -179,25 +204,12 @@ const Home = () => {
   
     try {
       await login();
-      const wallet = wallets[0]; // Assuming the user has at least one wallet connected
-      console.log('Wallet connected:', wallet);
-  
-      // Save user information to the backend
-      const account = await fetch('/api/save-account', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ address: wallet.address }),
-      });
-      console.log('Account saved or retrieved:', account);
-  
       setErrorMessage('');
     } catch (error) {
       console.error('Privy login error:', error);
       setErrorMessage(error.message);
     }
-  };  
+  };   
 
   const handlePrivyLogout = async (e) => {
     e.preventDefault();
