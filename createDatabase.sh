@@ -47,7 +47,7 @@ DROP TABLE IF EXISTS contacts;
 CREATE TABLE contacts (
     id SERIAL PRIMARY KEY,
     contact VARCHAR(255),
-    address VARCHAR(255) UNIQUE,
+    address VARCHAR(255),
     companion VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
