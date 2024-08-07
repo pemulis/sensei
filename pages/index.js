@@ -633,6 +633,18 @@ const Home = () => {
         setSystemPrompt(data.prompt);
         setVisibleForm(''); // Hide the form after submission
         fetchSystemPrompt(); // Fetch the updated system prompt
+  
+        // Create a new message informing about the updated system prompt
+        const informMessage = `System prompt has been updated to: ${data.prompt}`;
+  
+        // Update the messages state to show the new message in the thread
+        setMessages(prevMessages => [...prevMessages, {
+          role: 'Companion',
+          content: informMessage,
+        }]);
+  
+        // Send the message to the backend
+        await sendPromptToBackend(informMessage);
       } else {
         console.error('Error updating system prompt:', data.message);
         setErrorMessage(data.message);
@@ -641,7 +653,7 @@ const Home = () => {
       console.error('Error updating system prompt:', error);
       setErrorMessage(error.message);
     }
-  };
+  };  
 
   return (
     <div className={styles.container}>
