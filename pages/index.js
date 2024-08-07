@@ -92,26 +92,50 @@ const Home = () => {
     const privyLogin = async () => {
       if (authenticated && wallets.length > 0) {
         const wallet = wallets[0];
-
+  
         try {
-          await fetch('/api/privy-login', {
+          const response = await fetch('/api/privy-login', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({ address: wallet.address }),
           });
-
-          setErrorMessage('');
+  
+          const data = await response.json();
+  
+          if (response.ok) {
+            setErrorMessage('');
+  
+            // Fetch the system prompt and contacts after successful login
+            const systemPromptResponse = await fetch('/api/system-prompt');
+            const systemPromptData = await systemPromptResponse.json();
+  
+            if (systemPromptResponse.ok) {
+              setSystemPrompt(systemPromptData.prompt);
+              console.log('System Prompt:', systemPromptData.prompt);
+  
+              const contactsStringMatch = systemPromptData.prompt.match(/Here are the contacts and their Ethereum addresses: (.+)/);
+              if (contactsStringMatch && contactsStringMatch[1]) {
+                const contactsObject = JSON.parse(contactsStringMatch[1]);
+                setContacts(contactsObject);
+                console.log('Contacts Object:', contactsObject);
+              }
+            } else {
+              console.error('Error fetching system prompt:', systemPromptData.error);
+            }
+          } else {
+            setErrorMessage(data.message || 'Error during login');
+          }
         } catch (error) {
           console.error('Error handling Privy login:', error);
           setErrorMessage(error.message);
         }
       }
     };
-
+  
     privyLogin();
-  }, [authenticated, wallets]);
+  }, [authenticated, wallets]);  
 
   const handleStopRecording = () => {
     if (recorderRef.current) {

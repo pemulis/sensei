@@ -36,10 +36,10 @@ const dev = process.env.NODE_ENV !== 'production';
 const nextApp = next({ dev });
 const handle = nextApp.getRequestHandler();
 
-async function initializeFullInstructions() {
+async function initializeFullInstructions(session) {
   let contactsString = '';
   try {
-    const contactsResult = await pool.query('SELECT contact, address FROM contacts WHERE companion = $1', [req.session.companion]);
+    const contactsResult = await pool.query('SELECT contact, address FROM contacts WHERE companion = $1', [session.companion]);
     const contacts = contactsResult.rows;
     const contactDetailsObject = contacts.reduce((acc, contact) => {
       acc[contact.contact] = contact.address;
