@@ -61,12 +61,17 @@ async function initializeFullInstructions(session) {
     guideDetailsString = JSON.stringify(guideDetailsObject);
   }
 
+  // Ensure fullInstructions only has each part appended once
   fullInstructions = `${sensei.systemPromptFunctional}`;
-  if (personalPrompt) {
+  if (personalPrompt && !fullInstructions.includes(personalPrompt)) {
     fullInstructions += ` ${personalPrompt}`;
   }
-  fullInstructions += ` Here are the specialized guides available to you through the callGuide function: ${guideDetailsString}.`;
-  fullInstructions += ` Here are the contacts and their Ethereum addresses: ${contactsString}.`;
+  if (guideDetailsString && !fullInstructions.includes(guideDetailsString)) {
+    fullInstructions += ` Here are the specialized guides available to you through the callGuide function: ${guideDetailsString}.`;
+  }
+  if (contactsString && !fullInstructions.includes(contactsString)) {
+    fullInstructions += ` Here are the contacts and their Ethereum addresses: ${contactsString}.`;
+  }
 }
 
 async function initializeSessionVariables(req) {
