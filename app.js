@@ -835,21 +835,24 @@ async function main() {
       }
     
       try {
-        const result = await pool.query(
-          "INSERT INTO companions (address, created_at) VALUES ($1, NOW()) ON CONFLICT (address) DO NOTHING RETURNING *",
-          [address]
-        );
-    
-        if (result.rows.length === 0) {
+        // Check if the account already exists
+        const checkAccount = await pool.query("SELECT * FROM companions WHERE address = $1", [address]);
+        if (checkAccount.rows.length > 0) {
           return res.status(200).json({ message: 'Account already exists' });
         }
+    
+        // Insert new account if it doesn't exist
+        const result = await pool.query(
+          "INSERT INTO companions (address, created_at) VALUES ($1, NOW()) RETURNING *",
+          [address]
+        );
     
         res.status(201).json({ message: 'Account saved successfully' });
       } catch (error) {
         console.error('Error saving account:', error);
         res.status(500).json({ message: 'Server error' });
       }
-    });      
+    });       
 
     // All other routes handled by Next.js
     app.get('*', (req, res) => {
