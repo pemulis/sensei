@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
 import styles from '../styles/Home.module.css';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
-import regexPatterns from '../regex';  // Import the regex patterns
+import regexPatterns from '../regex';
 
 const tokenNameMap = {
   "0x0000000000000000000000000000000000000000": "Ethereum (ETH)",
@@ -618,6 +618,31 @@ const Home = () => {
     console.error("Polling error or processing error: ", error);
   };
 
+  const handleSystemPromptSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('/api/system-prompt', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt: systemPrompt }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setSystemPrompt(data.prompt);
+        setVisibleForm(''); // Hide the form after submission
+        fetchSystemPrompt(); // Fetch the updated system prompt
+      } else {
+        console.error('Error updating system prompt:', data.message);
+        setErrorMessage(data.message);
+      }
+    } catch (error) {
+      console.error('Error updating system prompt:', error);
+      setErrorMessage(error.message);
+    }
+  };
+
   return (
     <div className={styles.container}>
       <Head>
@@ -661,6 +686,7 @@ const Home = () => {
           <button type="button" disabled={!ready || (ready && authenticated)} onClick={handlePrivyLogin}>Log in with Privy</button>
           <button type="button" disabled={!ready || (ready && !authenticated)} onClick={handlePrivyLogout}>Log out with Privy</button>
           <button type="button" onClick={() => showForm('chat')}>Vibe Check</button>
+          <button type="button" onClick={() => showForm('systemPrompt')}>Update System Prompt</button> {/* Button to show the form */}
         </div>
       )}
 
@@ -738,6 +764,20 @@ const Home = () => {
           )}
         </div>
       )}
+
+      {/* Hidden form for updating system prompt */}
+      <form id="systemPromptForm" className={visibleForm === 'systemPrompt' ? '' : styles.hidden} onSubmit={handleSystemPromptSubmit}>
+        <label htmlFor="systemPrompt">Update System Prompt:</label>
+        <textarea
+          id="systemPrompt"
+          name="systemPrompt"
+          rows="10"
+          cols="60"
+          value={systemPrompt}
+          onChange={(e) => setSystemPrompt(e.target.value)}
+        ></textarea>
+        <button type="submit">Update</button>
+      </form>
 
     </div>
   );
