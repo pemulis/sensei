@@ -35,6 +35,7 @@ async function initializeFullInstructions(session) {
       acc[contact.contact] = contact.address;
       return acc;
     }, {});
+
     contactsString = JSON.stringify(contactDetailsObject);
   } catch (err) {
     console.error('Error fetching contacts from database:', err);
@@ -46,24 +47,27 @@ async function initializeFullInstructions(session) {
         acc[guide.name] = guide.description;
         return acc;
       }, {});
+
       const guideDetailsString = JSON.stringify(guideDetailsObject);
+
       fullInstructions = `${sensei.systemPromptPersonal} ${sensei.systemPromptFunctional} These are the specialized guides available to you through the callGuide function: ${guideDetailsString}. Here are the contacts and their Ethereum addresses: ${contactsString}`;
     } else {
-      fullInstructions = `${sensei.systemPrompt} ${sensei.systemPromptFunctional} Here are the contacts and their Ethereum addresses: ${contactsString}`;
+      fullInstructions = `${sensei.systemPromptPersonal} ${sensei.systemPromptFunctional} Here are the contacts and their Ethereum addresses: ${contactsString}`;
     }
   }
 }
 
 async function initializeSessionVariables(req) {
-  if (!req.session.companion) req.session.companion = req.session.companionId || null;
-  if (!req.session.messages) req.session.messages = [];
-  if (!req.session.guide) req.session.guide = '';
-  if (!req.session.thread) req.session.thread = '';
-  if (!req.session.requestQueue) req.session.requestQueue = {};
-  console.log("Session variables initialized");
+  const session = req.session;
+  if (!session.companion) session.companion = session.companionId || null;
+  if (!session.messages) session.messages = [];
+  if (!session.guide) session.guide = '';
+  if (!session.thread) session.thread = '';
+  if (!session.requestQueue) session.requestQueue = {};
+  console.log("session variables initialized");
 
-  if (req.session.companion) {
-    await initializeFullInstructions(req.session);
+  if (session.companion) {
+    await initializeFullInstructions(session);
   }
 }
 
@@ -664,28 +668,35 @@ async function main() {
 
   app.post('/api/privy-login', async (req, res) => {
     const { address } = req.body;
+  
     if (!address) {
       return res.status(400).json({ message: 'Address is required' });
     }
+  
     try {
       const checkAccount = await pool.query("SELECT * FROM companions WHERE address = $1", [address]);
       if (checkAccount.rows.length > 0) {
         req.session.companionId = checkAccount.rows[0].id;
+        req.session.companion = checkAccount.rows[0].id; // Ensure companion is set
         await initializeSessionVariables(req);
         return res.status(200).json({ message: 'Account already exists' });
       }
+  
       const result = await pool.query(
         "INSERT INTO companions (address, created_at) VALUES ($1, NOW()) RETURNING *",
         [address]
       );
+  
       req.session.companionId = result.rows[0].id;
+      req.session.companion = result.rows[0].id; // Ensure companion is set
       await initializeSessionVariables(req);
+  
       res.status(201).json({ message: 'Account saved successfully' });
     } catch (error) {
       console.error('Error saving account:', error);
       res.status(500).json({ message: 'Server error' });
     }
-  });
+  });  
 
   app.get('*', (req, res) => {
     return handle(req, res);
