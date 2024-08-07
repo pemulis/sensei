@@ -89,12 +89,12 @@ const Home = () => {
   }, [wallets]);
 
   useEffect(() => {
-    const saveAccount = async () => {
+    const privyLogin = async () => {
       if (authenticated && wallets.length > 0) {
         const wallet = wallets[0];
 
         try {
-          await fetch('/api/save-account', {
+          await fetch('/api/privy-login', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -104,13 +104,13 @@ const Home = () => {
 
           setErrorMessage('');
         } catch (error) {
-          console.error('Error saving account:', error);
+          console.error('Error handling Privy login:', error);
           setErrorMessage(error.message);
         }
       }
     };
 
-    saveAccount();
+    privyLogin();
   }, [authenticated, wallets]);
 
   const handleStopRecording = () => {

@@ -108,7 +108,7 @@ async function main() {
     let vectorStore = null; // Will store the vector store for file search
 
     function initializeSessionVariables(session) {
-      if (!session.companion) session.companion = null;
+      if (!session.companion) session.companion = session.companionId || null;
       if (!session.messages) session.messages = [];
       if (!session.guide) session.guide = '';
       if (!session.thread) session.thread = '';
@@ -827,7 +827,7 @@ async function main() {
       }
     });
 
-    app.post('/api/save-account', async (req, res) => {
+    app.post('/api/privy-login', async (req, res) => {
       const { address } = req.body;
     
       if (!address) {
@@ -838,7 +838,9 @@ async function main() {
         // Check if the account already exists
         const checkAccount = await pool.query("SELECT * FROM companions WHERE address = $1", [address]);
         if (checkAccount.rows.length > 0) {
-          console.log('Account already exists:', checkAccount.rows[0]);
+          // If the account exists, set the session variables
+          req.session.companionId = checkAccount.rows[0].id;
+          initializeSessionVariables(req.session);
           return res.status(200).json({ message: 'Account already exists' });
         }
     
@@ -847,14 +849,18 @@ async function main() {
           "INSERT INTO companions (address, created_at) VALUES ($1, NOW()) RETURNING *",
           [address]
         );
-        console.log("Account saved:", result.rows[0]);
+    
+        // Set session variables for the new account
+        req.session.companionId = result.rows[0].id;
+        initializeSessionVariables(req.session);
     
         res.status(201).json({ message: 'Account saved successfully' });
       } catch (error) {
         console.error('Error saving account:', error);
         res.status(500).json({ message: 'Server error' });
       }
-    });       
+    });
+         
 
     // All other routes handled by Next.js
     app.get('*', (req, res) => {
