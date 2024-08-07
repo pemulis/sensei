@@ -620,7 +620,6 @@ const Home = () => {
     <div className={styles.container}>
       <Head>
         <title>Sensei</title>
-        <link rel="stylesheet" href="/style.css" />
       </Head>
 
       {!authenticated ? (
