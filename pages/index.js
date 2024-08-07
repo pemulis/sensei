@@ -39,8 +39,6 @@ const Home = () => {
   const { login, logout, signMessage, user, authenticated } = usePrivy();
   const { ready, wallets } = useWallets();
   const [isRecording, setIsRecording] = useState(false);
-  const [audioPromptUrl, setAudioPromptUrl] = useState('');
-  const [audioResponseUrl, setAudioResponseUrl] = useState('');
   const [prompt, setPrompt] = useState('');
   const [visibleForm, setVisibleForm] = useState(''); // Track which form is visible
   const [errorMessage, setErrorMessage] = useState(''); // Track the error message
@@ -52,8 +50,6 @@ const Home = () => {
   const [tokenPrices, setTokenPrices] = useState({});
   const [messages, setMessages] = useState([]); // Track all messages with audio
   const [nonce, setNonce] = useState([]);
-  const audioPromptRef = useRef();
-  const audioResponseRef = useRef();
   const threadContainerRef = useRef();
   const recorderRef = useRef(null); // useRef for recorder
   const audioStreamRef = useRef(null); // useRef for audio stream
