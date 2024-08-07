@@ -83,55 +83,8 @@ heroku addons:create heroku-postgresql:essential-0 --app $BRANCH_NAME
 # Wait five minutes for the database to be provisioned
 sleep 300
 
-# Create a database table to store messages
-heroku pg:psql --app "$BRANCH_NAME" <<EOF
-CREATE TABLE messages (
-    id SERIAL PRIMARY KEY,
-    role VARCHAR(255),
-    content TEXT,
-    guide VARCHAR(255),
-    companion VARCHAR(255),
-    thread VARCHAR(255),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-EOF
-
-# Create a database table to store companions (accounts that send queries, could be human or AI)
-heroku pg:psql --app "$BRANCH_NAME" <<EOF
-CREATE TABLE companions (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(255),
-    address VARCHAR(255) UNIQUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-EOF
-
-# Create a database table to store contacts
-heroku pg:psql --app "$BRANCH_NAME" <<EOF
-CREATE TABLE contacts (
-    id SERIAL PRIMARY KEY,
-    contact VARCHAR(255),
-    address VARCHAR(255) UNIQUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-EOF
-
-# Index messages by guide, companion, and thread for easy retrieval
-heroku pg:psql --app "$BRANCH_NAME" <<EOF
-CREATE INDEX idx_messages_guide ON messages(guide);
-CREATE INDEX idx_messages_companion ON messages(companion);
-CREATE INDEX idx_messages_thread ON messages(thread);
-EOF
-
-# Create a table to store sessions
-heroku pg:psql --app "$BRANCH_NAME" <<EOF
-CREATE TABLE IF NOT EXISTS "session" (
-  "sid" varchar NOT NULL COLLATE "default",
-  "sess" json NOT NULL,
-  "expire" timestamp(6) NOT NULL
-) WITH (OIDS=FALSE);
-ALTER TABLE "session" ADD CONSTRAINT "session_pkey" PRIMARY KEY ("sid") NOT DEFERRABLE INITIALLY IMMEDIATE;
-EOF
+# Call the new createDatabase.sh script to set up the database tables
+./createDatabase.sh --app-name "$BRANCH_NAME"
 
 # Add Heroku remote for this branch
 git remote add $BRANCH_NAME https://git.heroku.com/$BRANCH_NAME.git
