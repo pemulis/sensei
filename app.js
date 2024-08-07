@@ -568,6 +568,10 @@ async function main() {
   });
 
   app.get('/api/system-prompt', (req, res) => {
+    if (!req.session.companion) {
+      return res.status(403).json({ message: 'User not authenticated' });
+    }
+    
     if (fullInstructions) {
       res.status(200).json({ prompt: fullInstructions });
     } else {
