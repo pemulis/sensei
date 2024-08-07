@@ -39,6 +39,7 @@ const Home = () => {
   const { login, logout, signMessage, user, authenticated } = usePrivy();
   const { ready, wallets } = useWallets();
   const [isRecording, setIsRecording] = useState(false);
+  const [audioPromptUrl, setAudioPromptUrl] = useState('');
   const [prompt, setPrompt] = useState('');
   const [visibleForm, setVisibleForm] = useState(''); // Track which form is visible
   const [errorMessage, setErrorMessage] = useState(''); // Track the error message
@@ -620,6 +621,7 @@ const Home = () => {
     <div className={styles.container}>
       <Head>
         <title>Sensei</title>
+        <link rel="stylesheet" href="/style.css" />
       </Head>
 
       {!authenticated ? (
