@@ -106,8 +106,8 @@ const Home = () => {
           });
 
           setErrorMessage('');
-          fetchSystemPrompt();
-          fetchContacts();
+          await fetchSystemPrompt();
+          await fetchContacts();
         } catch (error) {
           console.error('Error handling Privy login:', error);
           setErrorMessage(error.message);
@@ -561,6 +561,15 @@ const Home = () => {
     const thanks = "Thank you, I can see my " + dashboardType + " dashboard now.";
     displayPrompt(thanks);
     sendPromptToBackend(thanks);
+
+    if (dashboardType === 'contacts') {
+      try {
+        await fetchContacts();
+      } catch (error) {
+        console.error('Error fetching contacts:', error);
+        setErrorMessage(error.message);
+      }
+    }
   
     if (dashboardType === 'balance' || dashboardType === 'rewards') {
       try {
