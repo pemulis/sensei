@@ -688,6 +688,19 @@ const Home = () => {
             <button type="submit">Send</button>
           </form>
 
+          <form id="systemPromptForm" className={visibleForm === 'systemPrompt' ? '' : styles.hidden} onSubmit={handleSystemPromptSubmit}>
+            <label htmlFor="systemPrompt">Update System Prompt:</label>
+            <textarea
+              id="systemPrompt"
+              name="systemPrompt"
+              rows="10"
+              cols="60"
+              value={systemPrompt}
+              onChange={(e) => setSystemPrompt(e.target.value)}
+            ></textarea>
+            <button type="submit">Update</button>
+          </form>
+
           <button type="button" onClick={() => showForm('chat')}>Show Chat Form</button>
           <button type="button" disabled={!ready || (ready && authenticated)} onClick={handlePrivyLogin}>Log in with Privy</button>
           <button type="button" disabled={!ready || (ready && !authenticated)} onClick={handlePrivyLogout}>Log out with Privy</button>
@@ -770,19 +783,6 @@ const Home = () => {
           )}
         </div>
       )}
-
-      <form id="systemPromptForm" className={visibleForm === 'systemPrompt' ? '' : styles.hidden} onSubmit={handleSystemPromptSubmit}>
-        <label htmlFor="systemPrompt">Update System Prompt:</label>
-        <textarea
-          id="systemPrompt"
-          name="systemPrompt"
-          rows="10"
-          cols="60"
-          value={systemPrompt}
-          onChange={(e) => setSystemPrompt(e.target.value)}
-        ></textarea>
-        <button type="submit">Update</button>
-      </form>
 
     </div>
   );
