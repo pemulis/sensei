@@ -119,14 +119,16 @@ const Home = () => {
   }, [authenticated, wallets]);
 
   useEffect(() => {
-    // Ensure the ref is available before trying to access it
     if (threadContainerRef.current) {
       const audioElements = threadContainerRef.current.querySelectorAll('audio');
       audioElements.forEach(audio => {
-        audio.volume = 1.0; // Set volume to maximum
+        // Ensure the volume is set to maximum each time the audio is played
+        audio.addEventListener('play', () => {
+          audio.volume = 1.0;
+        });
       });
     }
-  }, [messages]);   
+  }, [messages]); // Re-run this effect whenever messages change  
 
   const handleStartRecording = async () => {
     try {
