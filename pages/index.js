@@ -723,6 +723,7 @@ const Home = () => {
                   <audio 
                     src={message.audioUrl} 
                     controls 
+                    playsinline
                   />
                 )}
               </div>
