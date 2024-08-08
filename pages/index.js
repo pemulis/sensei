@@ -68,11 +68,7 @@ const Home = () => {
     } catch (error) {
       console.error('Error fetching system prompt:', error);
     }
-  };  
-
-  useEffect(() => {
-    fetchSystemPrompt();
-  }, []);
+  };
 
   // Assign the functions to the window object
   useEffect(() => {
@@ -96,7 +92,7 @@ const Home = () => {
           });
 
           setErrorMessage('');
-          fetchSystemPrompt(); // Fetch the system prompt after successful login to get contacts
+          fetchSystemPrompt(); // Fetch the system prompt after successful login to get contacts and personal prompt
         } catch (error) {
           console.error('Error handling Privy login:', error);
           setErrorMessage(error.message);
