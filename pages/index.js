@@ -51,7 +51,6 @@ const Home = () => {
   const [tokenPrices, setTokenPrices] = useState({});
   const [messages, setMessages] = useState([]); // Track all messages with audio
   const [nonce, setNonce] = useState([]);
-  const [tempSystemPrompt, setTempSystemPrompt] = useState(''); // Temporary state for the form input
   const threadContainerRef = useRef();
   const recorderRef = useRef(null); // useRef for recorder
   const audioStreamRef = useRef(null); // useRef for audio stream
@@ -70,6 +69,10 @@ const Home = () => {
       console.error('Error fetching system prompt:', error);
     }
   };
+
+  // useEffect(() => {
+  //   fetchSystemPrompt();
+  // });
 
   // Assign the functions to the window object
   useEffect(() => {
@@ -616,15 +619,15 @@ const Home = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ prompt: tempSystemPrompt }),
+        body: JSON.stringify({ prompt: systemPrompt }),
       });
       const data = await response.json();
       if (response.ok) {
         // Update the systemPrompt state with the new prompt
-        setSystemPrompt(tempSystemPrompt);
+        setSystemPrompt(systemPrompt);
   
         // Create a new message informing about the updated system prompt
-        const informMessage = `System prompt has been updated to: ${tempSystemPrompt}`;
+        const informMessage = `System prompt has been updated to: ${systemPrompt}`;
   
         // Update the messages state to show the new message in the thread
         setMessages(prevMessages => [...prevMessages, {
@@ -775,8 +778,8 @@ const Home = () => {
           name="systemPrompt"
           rows="10"
           cols="60"
-          value={tempSystemPrompt}
-          onChange={(e) => setTempSystemPrompt(e.target.value)}
+          value={systemPrompt}
+          onChange={(e) => systemPrompt(e.target.value)}
         ></textarea>
         <button type="submit">Update</button>
       </form>
