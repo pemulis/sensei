@@ -119,25 +119,19 @@ const Home = () => {
   }, [authenticated, wallets]);
 
   useEffect(() => {
-    // Ensure the ref is available before trying to access it
-    if (threadContainerRef.current) {
-      const audioElements = threadContainerRef.current.querySelectorAll('audio');
-  
-      const setVolumeToMax = (event) => {
+    const setVolumeToMax = (event) => {
+      if (event.target.tagName === 'AUDIO') {
         event.target.volume = 1.0; // Set volume to maximum
-      };
+        console.log('Volume set to maximum');
+      }
+    };
   
-      audioElements.forEach(audio => {
-        // Ensure the volume is set to maximum each time the audio is about to play
-        audio.addEventListener('play', setVolumeToMax);
-        
-        // Clean up the event listener when the component unmounts or re-renders
-        return () => {
-          audio.removeEventListener('play', setVolumeToMax);
-        };
-      });
-    }
-  }, [messages]); // Re-run this effect whenever messages change
+    document.addEventListener('play', setVolumeToMax, true);
+  
+    return () => {
+      document.removeEventListener('play', setVolumeToMax, true);
+    };
+  }, []);
 
   const handleStartRecording = async () => {
     try {
