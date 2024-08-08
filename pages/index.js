@@ -720,28 +720,10 @@ const Home = () => {
                 <div className={styles.chatRole}>{message.role}</div>
                 <div className={styles.chatContent} dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(message.content) }}></div>
                 {message.audioUrl && (
-                  <div>
-                    <audio 
-                      src={message.audioUrl} 
-                      controls 
-                      onVolumeChange={(e) => {
-                        const volumeSlider = e.target.nextElementSibling;
-                        volumeSlider.value = e.target.volume;
-                      }}
-                    />
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.01"
-                      defaultValue="1"
-                      onChange={(e) => {
-                        const audioElement = e.target.previousSibling;
-                        audioElement.volume = e.target.value;
-                      }}
-                      style={{ width: '100%' }}
-                    />
-                  </div>
+                  <audio 
+                    src={message.audioUrl} 
+                    controls 
+                  />
                 )}
               </div>
             ))}
