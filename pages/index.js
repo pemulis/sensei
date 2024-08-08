@@ -129,48 +129,60 @@ const Home = () => {
   };
   
   const handleStartRecording = async () => {
-    const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const recorder = new MediaRecorder(audioStream);
-    let audioChunks = [];
-  
-    recorder.ondataavailable = e => {
-      audioChunks.push(e.data);
-    };
-  
-    recorder.onstop = async () => {
-      const audioBlob = new Blob(audioChunks, { type: 'audio/mpeg' });
-      const audioUrl = URL.createObjectURL(audioBlob);
-      setAudioPromptUrl(audioUrl);
-  
-      const newMessage = {
-        role: 'Companion',
-        content: '',
-        audioUrl: audioUrl
-      };
-      setMessages(prevMessages => [...prevMessages, newMessage]); // Add the message to the thread immediately
-  
-      const formData = new FormData();
-      formData.append("audioFile", audioBlob, "audio.mp3");
-  
-      try {
-        const response = await fetch("/upload-audio", {
-          method: "POST",
-          body: formData,
-        });
-        const data = await response.json();
-        if (data.requestId) {
-          pollStatus(data.requestId, handleTranscriptionResult, handleError);
-        }
-      } catch (error) {
-        console.error("Error uploading audio: ", error);
+    try {
+      // Request permission to access the microphone
+      const permissionStatus = await navigator.permissions.query({ name: 'microphone' });
+      if (permissionStatus.state !== 'granted') {
+        throw new Error('Microphone access denied');
       }
-    };
-  
-    recorder.start();
-    recorderRef.current = recorder;
-    audioStreamRef.current = audioStream;
-    setIsRecording(true);
-  };  
+
+      // Get user media with audio
+      const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(audioStream);
+      let audioChunks = [];
+
+      recorder.ondataavailable = e => {
+        audioChunks.push(e.data);
+      };
+
+      recorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/mpeg' });
+        const audioUrl = URL.createObjectURL(audioBlob);
+        setAudioPromptUrl(audioUrl);
+
+        const newMessage = {
+          role: 'Companion',
+          content: '',
+          audioUrl: audioUrl
+        };
+        setMessages(prevMessages => [...prevMessages, newMessage]); // Add the message to the thread immediately
+
+        const formData = new FormData();
+        formData.append("audioFile", audioBlob, "audio.mp3");
+
+        try {
+          const response = await fetch("/upload-audio", {
+            method: "POST",
+            body: formData,
+          });
+          const data = await response.json();
+          if (data.requestId) {
+            pollStatus(data.requestId, handleTranscriptionResult, handleError);
+          }
+        } catch (error) {
+          console.error("Error uploading audio: ", error);
+        }
+      };
+
+      recorder.start();
+      recorderRef.current = recorder;
+      audioStreamRef.current = audioStream;
+      setIsRecording(true);
+    } catch (error) {
+      console.error('Error starting recording:', error);
+      setErrorMessage('Failed to start recording: ' + error.message);
+    }
+  };
 
   const handleSubmitPrompt = async (e) => {
     e.preventDefault();
@@ -414,7 +426,7 @@ const Home = () => {
       // Convert headers
       .replace(/^#### (.*$)/gim, '<h4>$1</h4>')
       .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-      .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+      .replace(/^## (.*$)/gim, '<h2>$1</2>')
       .replace(/^# (.*$)/gim, '<h1>$1</h1>')
       // Convert blockquotes
       .replace(/^\> (.*$)/gim, '<blockquote>$1</blockquote>')
