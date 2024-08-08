@@ -564,6 +564,7 @@ const Home = () => {
 
     if (dashboardType === 'contacts') {
       try {
+        console.log('Fetching contacts...');
         await fetchContacts();
       } catch (error) {
         console.error('Error fetching contacts:', error);
