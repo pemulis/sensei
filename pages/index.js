@@ -118,22 +118,13 @@ const Home = () => {
     privyLogin();
   }, [authenticated, wallets]);
 
-  const handleStopRecording = () => {
-    if (recorderRef.current) {
-      recorderRef.current.stop();
-    }
-    if (audioStreamRef.current) {
-      audioStreamRef.current.getTracks().forEach(track => track.stop());
-    }
-    setIsRecording(false);
-  };
-  
   const handleStartRecording = async () => {
     try {
+      // Check the microphone permission status
       const permissionStatus = await navigator.permissions.query({ name: 'microphone' });
-  
+      
       if (permissionStatus.state !== 'granted') {
-        // Request permission to access the microphone
+        // Request permission to access the microphone if not granted
         await navigator.mediaDevices.getUserMedia({ audio: true });
         // Re-check the permission status
         const newPermissionStatus = await navigator.permissions.query({ name: 'microphone' });
@@ -142,6 +133,12 @@ const Home = () => {
         }
       }
   
+      // Stop any existing audio stream
+      if (audioStreamRef.current) {
+        audioStreamRef.current.getTracks().forEach(track => track.stop());
+      }
+  
+      // Get a new audio stream
       const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const recorder = new MediaRecorder(audioStream);
       let audioChunks = [];
@@ -187,6 +184,16 @@ const Home = () => {
       console.error('Error starting recording:', error);
       setErrorMessage('Failed to start recording: ' + error.message);
     }
+  };
+  
+  const handleStopRecording = () => {
+    if (recorderRef.current) {
+      recorderRef.current.stop();
+    }
+    if (audioStreamRef.current) {
+      audioStreamRef.current.getTracks().forEach(track => track.stop());
+    }
+    setIsRecording(false);
   };  
 
   const handleSubmitPrompt = async (e) => {
