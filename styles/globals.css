@@ -19,10 +19,3 @@ button {
   padding: 10px;
   cursor: pointer;
 }
-
-@media (max-width: 768px) {
-  button {
-    width: 100%; /* Full width for buttons */
-    margin-bottom: 10px; /* Space between buttons */
-  }
-}
