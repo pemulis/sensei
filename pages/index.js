@@ -62,20 +62,13 @@ const Home = () => {
       const data = await response.json();
       if (response.ok) {
         setSystemPrompt(data.prompt);
-        console.log('System Prompt:', data.prompt);
-        const contactsStringMatch = data.prompt.match(/Here are the contacts and their Ethereum addresses: (.+)/);
-        if (contactsStringMatch && contactsStringMatch[1]) {
-          const contactsObject = JSON.parse(contactsStringMatch[1]);
-          setContacts(contactsObject);
-          console.log('Contacts Object:', contactsObject);
-        }
       } else {
         console.error('Error fetching system prompt:', data.error);
       }
     } catch (error) {
       console.error('Error fetching system prompt:', error);
     }
-  };
+  };  
 
   useEffect(() => {
     fetchSystemPrompt();
@@ -630,20 +623,22 @@ const Home = () => {
       });
       const data = await response.json();
       if (response.ok) {
-        setVisibleForm(''); // Hide the form after submission
-        fetchSystemPrompt(); // Fetch the updated system prompt
-
+        // Fetch and refresh the full instructions
+        await fetchSystemPrompt();
+  
         // Create a new message informing about the updated system prompt
         const informMessage = `System prompt has been updated to: ${systemPrompt}`;
-
+  
         // Update the messages state to show the new message in the thread
         setMessages(prevMessages => [...prevMessages, {
           role: 'System',
           content: informMessage,
         }]);
-
+  
         // Send the message to the backend
         await sendPromptToBackend(informMessage);
+  
+        setVisibleForm(''); // Hide the form after submission
       } else {
         console.error('Error updating system prompt:', data.message);
         setErrorMessage(data.message);
@@ -652,7 +647,7 @@ const Home = () => {
       console.error('Error updating system prompt:', error);
       setErrorMessage(error.message);
     }
-  };
+  };   
 
   return (
     <div className={styles.container}>

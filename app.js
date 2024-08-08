@@ -26,7 +26,7 @@ const dev = process.env.NODE_ENV !== 'production';
 const nextApp = next({ dev });
 const handle = nextApp.getRequestHandler();
 
-async function initializeFullInstructions(session) {
+const initializeFullInstructions = async (session) => {
   let contactsString = '';
   try {
     const contactsResult = await pool.query('SELECT contact, address FROM contacts WHERE companion = $1', [session.companion]);
@@ -61,18 +61,21 @@ async function initializeFullInstructions(session) {
     guideDetailsString = JSON.stringify(guideDetailsObject);
   }
 
-  // Ensure fullInstructions only has each part appended once
+  // Construct fullInstructions ensuring no part is repeated
   fullInstructions = `${sensei.systemPromptFunctional}`;
+
   if (personalPrompt && !fullInstructions.includes(personalPrompt)) {
     fullInstructions += ` ${personalPrompt}`;
   }
+
   if (guideDetailsString && !fullInstructions.includes(guideDetailsString)) {
     fullInstructions += ` Here are the specialized guides available to you through the callGuide function: ${guideDetailsString}.`;
   }
+
   if (contactsString && !fullInstructions.includes(contactsString)) {
     fullInstructions += ` Here are the contacts and their Ethereum addresses: ${contactsString}.`;
   }
-}
+};
 
 async function initializeSessionVariables(req) {
   const session = req.session;
@@ -588,45 +591,41 @@ async function main() {
     if (!req.session.companion) {
       return res.status(403).json({ message: 'User not authenticated' });
     }
-    
-    if (fullInstructions) {
-      try {
-        const promptResult = await pool.query('SELECT prompt FROM prompts WHERE companion = $1', [req.session.companion]);
-        if (promptResult.rows.length > 0) {
-          fullInstructions = promptResult.rows[0].prompt + " " + fullInstructions;
-        } else if (sensei.systemPromptPersonal) {
-          fullInstructions = sensei.systemPromptPersonal + " " + fullInstructions;
-        }
-        res.status(200).json({ prompt: fullInstructions });
-      } catch (error) {
-        res.status(500).json({ error: 'System prompt not available' });
-      }
+  
+    try {
+      await initializeFullInstructions(req.session);
+      res.status(200).json({ prompt: fullInstructions });
+    } catch (error) {
+      res.status(500).json({ error: 'System prompt not available' });
     }
-  });
+  });  
 
   app.post('/api/system-prompt', async (req, res) => {
     const { prompt } = req.body;
-
+  
     if (!prompt) {
       return res.status(400).json({ message: 'Prompt is required' });
     }
-
+  
     if (!req.session.companion) {
       return res.status(403).json({ message: 'User not authenticated' });
     }
-
+  
     try {
       await pool.query(
         'INSERT INTO prompts (companion, prompt) VALUES ($1, $2) ON CONFLICT (companion) DO UPDATE SET prompt = $2',
         [req.session.companion, prompt]
       );
+  
+      // Reinitialize the full instructions with the updated prompt
       await initializeFullInstructions(req.session);
-      res.status(200).json({ message: 'System prompt updated' });
+  
+      res.status(200).json({ message: 'System prompt updated', prompt: fullInstructions });
     } catch (error) {
       console.error('Error updating system prompt:', error);
       res.status(500).json({ message: 'Server error' });
     }
-  });
+  });  
 
   app.get('/api/balance/:address', async (req, res) => {
     const { address } = req.params;
