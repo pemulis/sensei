@@ -130,39 +130,44 @@ const Home = () => {
   
   const handleStartRecording = async () => {
     try {
-      // Request permission to access the microphone
       const permissionStatus = await navigator.permissions.query({ name: 'microphone' });
+  
       if (permissionStatus.state !== 'granted') {
-        throw new Error('Microphone access denied');
+        // Request permission to access the microphone
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+        // Re-check the permission status
+        const newPermissionStatus = await navigator.permissions.query({ name: 'microphone' });
+        if (newPermissionStatus.state !== 'granted') {
+          throw new Error('Microphone access denied');
+        }
       }
-
-      // Get user media with audio
+  
       const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const recorder = new MediaRecorder(audioStream);
       let audioChunks = [];
-
-      recorder.ondataavailable = e => {
+  
+      recorder.ondataavailable = (e) => {
         audioChunks.push(e.data);
       };
-
+  
       recorder.onstop = async () => {
         const audioBlob = new Blob(audioChunks, { type: 'audio/mpeg' });
         const audioUrl = URL.createObjectURL(audioBlob);
         setAudioPromptUrl(audioUrl);
-
+  
         const newMessage = {
           role: 'Companion',
           content: '',
-          audioUrl: audioUrl
+          audioUrl: audioUrl,
         };
-        setMessages(prevMessages => [...prevMessages, newMessage]); // Add the message to the thread immediately
-
+        setMessages((prevMessages) => [...prevMessages, newMessage]);
+  
         const formData = new FormData();
-        formData.append("audioFile", audioBlob, "audio.mp3");
-
+        formData.append('audioFile', audioBlob, 'audio.mp3');
+  
         try {
-          const response = await fetch("/upload-audio", {
-            method: "POST",
+          const response = await fetch('/upload-audio', {
+            method: 'POST',
             body: formData,
           });
           const data = await response.json();
@@ -170,10 +175,10 @@ const Home = () => {
             pollStatus(data.requestId, handleTranscriptionResult, handleError);
           }
         } catch (error) {
-          console.error("Error uploading audio: ", error);
+          console.error('Error uploading audio:', error);
         }
       };
-
+  
       recorder.start();
       recorderRef.current = recorder;
       audioStreamRef.current = audioStream;
@@ -182,7 +187,7 @@ const Home = () => {
       console.error('Error starting recording:', error);
       setErrorMessage('Failed to start recording: ' + error.message);
     }
-  };
+  };  
 
   const handleSubmitPrompt = async (e) => {
     e.preventDefault();
