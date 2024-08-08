@@ -225,4 +225,9 @@
   #prompt {
     width: 100%; /* Full width on small screens */
   }
+
+  .fullWidthButton {
+    width: 100%; /* Full width for buttons */
+    margin-bottom: 10px; /* Space between buttons */
+  }
 }

@@ -712,11 +712,11 @@ const Home = () => {
             <button type="submit">Update</button>
           </form>
 
-          <button type="button" onClick={() => showForm('chat')}>Show Chat Form</button>
-          <button type="button" disabled={!ready || (ready && authenticated)} onClick={handlePrivyLogin}>Log in with Privy</button>
-          <button type="button" disabled={!ready || (ready && !authenticated)} onClick={handlePrivyLogout}>Log out with Privy</button>
-          <button type="button" onClick={() => { showForm('chat'); setPrompt("Here is how I am feeling today: "); }}>Vibe Check</button>
-          <button type="button" onClick={() => { showForm('systemPrompt'); setSystemPrompt(''); }}>Update System Prompt</button>
+          <button className={styles.fullWidthButton} type="button" onClick={() => showForm('chat')}>Show Chat Form</button>
+          <button className={styles.fullWidthButton} type="button" disabled={!ready || (ready && authenticated)} onClick={handlePrivyLogin}>Log in with Privy</button>
+          <button className={styles.fullWidthButton} type="button" disabled={!ready || (ready && !authenticated)} onClick={handlePrivyLogout}>Log out with Privy</button>
+          <button className={styles.fullWidthButton} type="button" onClick={() => { showForm('chat'); setPrompt("Here is how I am feeling today: "); }}>Vibe Check</button>
+          <button className={styles.fullWidthButton} type="button" onClick={() => { showForm('systemPrompt'); setSystemPrompt(''); }}>Update System Prompt</button>
         </div>
       )}
 
