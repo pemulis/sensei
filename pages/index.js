@@ -51,6 +51,7 @@ const Home = () => {
   const [tokenPrices, setTokenPrices] = useState({});
   const [messages, setMessages] = useState([]); // Track all messages with audio
   const [nonce, setNonce] = useState([]);
+  const [tempSystemPrompt, setTempSystemPrompt] = useState(''); // Temporary state for the form input
   const threadContainerRef = useRef();
   const recorderRef = useRef(null); // useRef for recorder
   const audioStreamRef = useRef(null); // useRef for audio stream
@@ -615,15 +616,15 @@ const Home = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ prompt: systemPrompt }),
+        body: JSON.stringify({ prompt: tempSystemPrompt }),
       });
       const data = await response.json();
       if (response.ok) {
-        // Fetch and refresh the full instructions
-        await fetchSystemPrompt();
+        // Update the systemPrompt state with the new prompt
+        setSystemPrompt(tempSystemPrompt);
   
         // Create a new message informing about the updated system prompt
-        const informMessage = `System prompt has been updated to: ${systemPrompt}`;
+        const informMessage = `System prompt has been updated to: ${tempSystemPrompt}`;
   
         // Update the messages state to show the new message in the thread
         setMessages(prevMessages => [...prevMessages, {
@@ -643,7 +644,7 @@ const Home = () => {
       console.error('Error updating system prompt:', error);
       setErrorMessage(error.message);
     }
-  };   
+  };    
 
   return (
     <div className={styles.container}>
@@ -688,7 +689,7 @@ const Home = () => {
           <button type="button" disabled={!ready || (ready && authenticated)} onClick={handlePrivyLogin}>Log in with Privy</button>
           <button type="button" disabled={!ready || (ready && !authenticated)} onClick={handlePrivyLogout}>Log out with Privy</button>
           <button type="button" onClick={() => showForm('chat')}>Vibe Check</button>
-          <button type="button" onClick={() => showForm('systemPrompt')}>Update System Prompt</button> {/* Button to show the form */}
+          <button type="button" onClick={() => showForm('systemPrompt')}>Update System Prompt</button>
         </div>
       )}
 
@@ -767,7 +768,6 @@ const Home = () => {
         </div>
       )}
 
-      {/* Hidden form for updating system prompt */}
       <form id="systemPromptForm" className={visibleForm === 'systemPrompt' ? '' : styles.hidden} onSubmit={handleSystemPromptSubmit}>
         <label htmlFor="systemPrompt">Update System Prompt:</label>
         <textarea
@@ -775,8 +775,8 @@ const Home = () => {
           name="systemPrompt"
           rows="10"
           cols="60"
-          value=""
-          onChange={(e) => setSystemPrompt(e.target.value)}
+          value={tempSystemPrompt}
+          onChange={(e) => setTempSystemPrompt(e.target.value)}
         ></textarea>
         <button type="submit">Update</button>
       </form>
