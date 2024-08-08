@@ -726,9 +726,13 @@ const Home = () => {
             <div>
               <h3>Contacts Dashboard</h3>
               <ul>
-                {Object.keys(contacts).map(contact => (
-                  <li key={contact}>{contact}: {contacts[contact]}</li>
-                ))}
+                {contacts && Object.keys(contacts).length > 0 ? (
+                  Object.keys(contacts).map(contact => (
+                    <li key={contact}>{contact}: {contacts[contact]}</li>
+                  ))
+                ) : (
+                  <p>No contacts available.</p>
+                )}
               </ul>
             </div>
           )}
