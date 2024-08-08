@@ -1,37 +1,38 @@
 /* styles/Home.module.css */
 
-#chatForm {
-  margin-top: 20px;
-}
-
-.jsonResponse {
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  background-color: #f4f4f4;
-  border: 1px solid #ddd;
-  padding: 10px;
-  font-family: 'Courier New', monospace;
-}
-
-.hidden {
-  display: none;
-}
-
-#showChatForm, #showRegisterForm, #showLoginForm {
-  font-size: 75%;
-  padding: 7.5px;
-}
-
-.errorMessage {
-  color: red;
-  font-weight: bold;
+body {
+  font-family: Arial, sans-serif;
 }
 
 .container {
   padding: 20px;
   display: flex;
-  flex-direction: row;
+  flex-direction: row; /* Horizontal layout by default */
   align-items: flex-start;
+}
+
+.loginContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100%;
+}
+
+.mainContent {
+  width: 100%;
+}
+
+.mainContentWithDashboard {
+  width: 60%;
+  order: 2;
+}
+
+.dashboard {
+  width: 40%;
+  border-left: 1px solid #ccc;
+  padding: 20px;
+  order: 1;
 }
 
 .chatBox {
@@ -74,7 +75,8 @@
   margin-bottom: 0.5em;
 }
 
-.chatContent ul, .chatContent ol {
+.chatContent ul,
+.chatContent ol {
   margin-bottom: 0.5em;
   padding-left: 1.5em;
 }
@@ -103,7 +105,8 @@
   margin-bottom: 1em;
 }
 
-.chatContent th, .chatContent td {
+.chatContent th,
+.chatContent td {
   border: 1px solid #ddd;
   padding: 0.5em;
   text-align: left;
@@ -115,26 +118,32 @@
 
 .errorMessage {
   color: red;
+  font-weight: bold;
 }
 
 .hidden {
   display: none;
 }
 
-.mainContent {
-  width: 100%;
+#chatForm {
+  margin-top: 20px;
 }
 
-.mainContentWithDashboard {
-  width: 60%;
-  order: 2;
+.jsonResponse {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  background-color: #f4f4f4;
+  border: 1px solid #ddd;
+  padding: 10px;
+  font-family: 'Courier New', monospace;
 }
 
-.dashboard {
-  width: 40%;
-  border-left: 1px solid #ccc;
-  padding: 20px;
-  order: 1;
+#showChatForm,
+#showRegisterForm,
+#showLoginForm {
+  font-size: 100%;
+  padding: 10px;
+  margin: 5px 0;
 }
 
 .totalPortfolioValue {
@@ -159,14 +168,6 @@
   width: 100px;
 }
 
-.loginContainer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh; /* Full viewport height */
-  width: 100vw; /* Full viewport width */
-}
-
 .intentionsContainer {
   overflow-x: auto;
   white-space: nowrap; /* Prevent line breaks */
@@ -176,4 +177,61 @@
   display: inline-block; /* Prevent the intention object from spilling over */
   white-space: pre-wrap;
   word-wrap: break-word;
+}
+
+/* Media Queries for Mobile Devices */
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column; /* Stack elements vertically on small screens */
+    padding: 10px;
+  }
+
+  .mainContentWithDashboard {
+    width: 100%;
+    order: 2;
+  }
+
+  .dashboard {
+    width: 100%; /* Full width on small screens */
+    border-left: none; /* Remove border for cleaner look */
+    border-top: 1px solid #ccc; /* Add top border instead */
+  }
+
+  .loginContainer {
+    flex-direction: column;
+  }
+
+  .totalPortfolioValue,
+  .balanceItem {
+    font-size: 1em;
+  }
+
+  .chatContent h1 {
+    font-size: 1.5em;
+  }
+
+  .chatContent h2 {
+    font-size: 1.3em;
+  }
+
+  .chatContent h3 {
+    font-size: 1.1em;
+  }
+
+  .chatContent h4 {
+    font-size: 1em;
+  }
+
+  #chatForm {
+    width: 100%; /* Full width on small screens */
+  }
+
+  #prompt {
+    width: 100%; /* Full width on small screens */
+  }
+
+  button {
+    width: 100%; /* Full width for buttons */
+    margin-bottom: 10px; /* Space between buttons */
+  }
 }
