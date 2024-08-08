@@ -544,6 +544,25 @@ async function main() {
     }
   });
 
+  app.get('/api/contacts', async (req, res) => {
+    if (!req.session.companion) {
+      return res.status(403).json({ message: 'User not authenticated' });
+    }
+
+    try {
+      const contactsResult = await pool.query('SELECT contact, address FROM contacts WHERE companion = $1', [req.session.companion]);
+      const contacts = contactsResult.rows.reduce((acc, contact) => {
+        acc[contact.contact] = contact.address;
+        return acc;
+      }, {});
+
+      res.status(200).json(contacts);
+    } catch (error) {
+      console.error('Error fetching contacts:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  });
+
   app.post('/api/update-contact', async (req, res) => {
     const { contact, address } = req.body;
 

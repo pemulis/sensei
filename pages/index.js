@@ -55,24 +55,22 @@ const Home = () => {
   const recorderRef = useRef(null); // useRef for recorder
   const audioStreamRef = useRef(null); // useRef for audio stream
 
-  // Fetch the system prompt when the component mounts
-  const fetchSystemPrompt = async () => {
+  const fetchData = async (url, setState) => {
     try {
-      const response = await fetch('/api/system-prompt');
+      const response = await fetch(url);
       const data = await response.json();
       if (response.ok) {
-        setSystemPrompt(data.prompt);
+        setState(data);
       } else {
-        console.error('Error fetching system prompt:', data.error);
+        console.error(`Error fetching from ${url}:`, data.error);
       }
     } catch (error) {
-      console.error('Error fetching system prompt:', error);
+      console.error(`Error fetching from ${url}:`, error);
     }
   };
 
-  // useEffect(() => {
-  //   fetchSystemPrompt();
-  // });
+  const fetchSystemPrompt = () => fetchData('/api/system-prompt', data => setSystemPrompt(data.prompt));
+  const fetchContacts = () => fetchData('/api/contacts', data => setContacts(data.contacts));
 
   // Assign the functions to the window object
   useEffect(() => {
@@ -96,7 +94,8 @@ const Home = () => {
           });
 
           setErrorMessage('');
-          fetchSystemPrompt(); // Fetch the system prompt after successful login to get contacts and personal prompt
+          fetchSystemPrompt();
+          fetchContacts();
         } catch (error) {
           console.error('Error handling Privy login:', error);
           setErrorMessage(error.message);
