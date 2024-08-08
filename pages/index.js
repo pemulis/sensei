@@ -55,22 +55,34 @@ const Home = () => {
   const recorderRef = useRef(null); // useRef for recorder
   const audioStreamRef = useRef(null); // useRef for audio stream
 
-  const fetchData = async (url, setState) => {
+  // Fetch the system prompt when the component mounts
+  const fetchSystemPrompt = async () => {
     try {
-      const response = await fetch(url);
+      const response = await fetch('/api/system-prompt');
       const data = await response.json();
       if (response.ok) {
-        setState(data);
+        setSystemPrompt(data.prompt);
       } else {
-        console.error(`Error fetching from ${url}:`, data.error);
+        console.error('Error fetching system prompt:', data.error);
       }
     } catch (error) {
-      console.error(`Error fetching from ${url}:`, error);
+      console.error('Error fetching system prompt:', error);
     }
   };
 
-  const fetchSystemPrompt = () => fetchData('/api/system-prompt', data => setSystemPrompt(data.prompt));
-  const fetchContacts = () => fetchData('/api/contacts', data => setContacts(data.contacts));
+  const fetchContacts = async () => {
+    try {
+      const response = await fetch('/api/contacts');
+      const data = await response.json();
+      if (response.ok) {
+        setContacts(data.contacts);
+      } else {
+        console.error('Error fetching contacts:', data.error);
+      }
+    } catch (error) {
+      console.error('Error fetching contacts:', error);
+    }
+  };
 
   // Assign the functions to the window object
   useEffect(() => {
