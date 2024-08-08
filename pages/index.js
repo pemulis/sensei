@@ -779,7 +779,7 @@ const Home = () => {
           rows="10"
           cols="60"
           value={systemPrompt}
-          onChange={(e) => systemPrompt(e.target.value)}
+          onChange={(e) => setSystemPrompt(e.target.value)}
         ></textarea>
         <button type="submit">Update</button>
       </form>
