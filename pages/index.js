@@ -118,6 +118,14 @@ const Home = () => {
     privyLogin();
   }, [authenticated, wallets]);
 
+  useEffect(() => {
+    // Set the volume of each audio element to 1.0 after the component has been rendered
+    const audioElements = threadContainerRef.current.querySelectorAll('audio');
+    audioElements.forEach(audio => {
+      audio.volume = 1.0; // Set volume to maximum
+    });
+  }, [messages]); // Re-run this effect whenever messages change  
+
   const handleStartRecording = async () => {
     try {
       // Check the microphone permission status
