@@ -705,7 +705,7 @@ const Home = () => {
           <button type="button" disabled={!ready || (ready && authenticated)} onClick={handlePrivyLogin}>Log in with Privy</button>
           <button type="button" disabled={!ready || (ready && !authenticated)} onClick={handlePrivyLogout}>Log out with Privy</button>
           <button type="button" onClick={() => showForm('chat')}>Vibe Check</button>
-          <button type="button" onClick={() => showForm('systemPrompt')}>Update System Prompt</button>
+          <button type="button" onClick={() => { showForm('systemPrompt'); setSystemPrompt(''); }}>Update System Prompt</button>
         </div>
       )}
 
