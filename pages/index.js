@@ -40,8 +40,7 @@ const Home = () => {
   const { ready, wallets } = useWallets();
   const [isRecording, setIsRecording] = useState(false);
   const [audioPromptUrl, setAudioPromptUrl] = useState('');
-  const [audioSource, setAudioSource] = useState(null);
-  const [audioStates, setAudioStates] = useState([]);
+  const audioContextRef = useRef(null);
   const [prompt, setPrompt] = useState('');
   const [visibleForm, setVisibleForm] = useState(''); // Track which form is visible
   const [errorMessage, setErrorMessage] = useState(''); // Track the error message
@@ -56,7 +55,6 @@ const Home = () => {
   const threadContainerRef = useRef();
   const recorderRef = useRef(null); // useRef for recorder
   const audioStreamRef = useRef(null); // useRef for audio stream
-  const audioContextRef = useRef(null);
 
   // Fetch the system prompt when the component mounts
   const fetchSystemPrompt = async () => {
@@ -93,18 +91,6 @@ const Home = () => {
     window.updateContact = (e, contactObject) => updateContact(e, contactObject);
     window.toggleDashboard = (e, dashboardType) => toggleDashboard(e, dashboardType);
   }, [wallets]);
-
-  useEffect(() => {
-    if (messages.length > 0 && audioStates.length === 0) {
-      setAudioStates(messages.map(() => ({
-        audioSource: null,
-        isPlaying: false,
-        isPaused: false,
-        isFinished: true,
-        currentTime: 0 // Track current playback position
-      })));
-    }
-  }, [messages]);
 
   useEffect(() => {
     const privyLogin = async () => {
@@ -723,29 +709,10 @@ const Home = () => {
     }
   };  
   
-  const playAudio = async (url, index) => {
+  const playAudio = async (url) => {
     if (!audioContextRef.current) return;
   
     try {
-      const currentState = audioStates[index];
-  
-      if (currentState.isPaused) {
-        // Resume the paused audio from the stored currentTime
-        const newSource = audioContextRef.current.createBufferSource();
-        newSource.buffer = currentState.audioSource.buffer;
-        newSource.connect(audioContextRef.current.destination);
-  
-        newSource.start(0, currentState.currentTime); // Start from the paused position
-        updateAudioState(index, { audioSource: newSource, isPlaying: true, isPaused: false, isFinished: false });
-  
-        newSource.onended = () => {
-          updateAudioState(index, { isPlaying: false, isPaused: false, isFinished: true, currentTime: 0 });
-        };
-  
-        return;
-      }
-  
-      // Fetch and decode the audio if not already loaded
       const response = await fetch(url);
       const arrayBuffer = await response.arrayBuffer();
       const audioBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer);
@@ -753,44 +720,13 @@ const Home = () => {
       const source = audioContextRef.current.createBufferSource();
       source.buffer = audioBuffer;
       source.connect(audioContextRef.current.destination);
-  
+      
       source.start(0);
-      updateAudioState(index, { audioSource: source, isPlaying: true, isPaused: false, isFinished: false, currentTime: 0 });
-  
-      source.onended = () => {
-        updateAudioState(index, { isPlaying: false, isPaused: false, isFinished: true, currentTime: 0 });
-      };
     } catch (error) {
       console.error('Error playing audio:', error);
     }
   };  
-  
-  const pauseAudio = (index) => {
-    const currentState = audioStates[index];
-    if (currentState.audioSource) {
-      const elapsedTime = audioContextRef.current.currentTime - currentState.audioSource.startTime;
-      updateAudioState(index, { isPlaying: false, isPaused: true, currentTime: elapsedTime });
-      currentState.audioSource.stop();
-    }
-  };  
-  
-  const restartAudio = (url, index) => {
-    const currentState = audioStates[index];
-    if (currentState.audioSource) {
-      currentState.audioSource.stop();
-    }
-    updateAudioState(index, { isPlaying: false, isPaused: false, isFinished: true, currentTime: 0 });
-    playAudio(url, index);
-  };  
 
-  const updateAudioState = (index, newState) => {
-    setAudioStates(prevStates => {
-      const updatedStates = [...prevStates];
-      updatedStates[index] = { ...updatedStates[index], ...newState };
-      return updatedStates;
-    });
-  }; 
-  
   return (
     <div className={styles.container}>
       <Head>
@@ -813,18 +749,9 @@ const Home = () => {
                 <div className={styles.chatContent} dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(message.content) }}></div>
                 {message.audioUrl && (
                   <div>
-                    {audioStates[index].isPlaying ? (
-                      <button onClick={() => pauseAudio(index)}>Pause Audio</button>
-                    ) : (
-                      <button onClick={() => playAudio(message.audioUrl, index)}>
-                        {audioStates[index].isPaused ? 'Resume Audio' : 'Play Audio'}
-                      </button>
-                    )}
-                    {!audioStates[index].isFinished && (
-                      <button onClick={() => restartAudio(message.audioUrl, index)}>
-                        Restart Audio
-                      </button>
-                    )}
+                    <button onClick={() => playAudio(message.audioUrl)}>
+                      Play Audio
+                    </button>
                   </div>
                 )}
               </div>
