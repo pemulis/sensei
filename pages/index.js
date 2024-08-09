@@ -41,13 +41,7 @@ const Home = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [audioPromptUrl, setAudioPromptUrl] = useState('');
   const [audioSource, setAudioSource] = useState(null);
-  const [audioStates, setAudioStates] = useState(messages.map(() => ({
-    audioSource: null,
-    isPlaying: false,
-    isPaused: false,
-    isFinished: true,
-    currentTime: 0 // Track current playback position
-  })));  
+  const [audioStates, setAudioStates] = useState([]);
   const [prompt, setPrompt] = useState('');
   const [visibleForm, setVisibleForm] = useState(''); // Track which form is visible
   const [errorMessage, setErrorMessage] = useState(''); // Track the error message
@@ -99,6 +93,18 @@ const Home = () => {
     window.updateContact = (e, contactObject) => updateContact(e, contactObject);
     window.toggleDashboard = (e, dashboardType) => toggleDashboard(e, dashboardType);
   }, [wallets]);
+
+  useEffect(() => {
+    if (messages.length > 0 && audioStates.length === 0) {
+      setAudioStates(messages.map(() => ({
+        audioSource: null,
+        isPlaying: false,
+        isPaused: false,
+        isFinished: true,
+        currentTime: 0 // Track current playback position
+      })));
+    }
+  }, [messages]);
 
   useEffect(() => {
     const privyLogin = async () => {
