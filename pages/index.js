@@ -45,8 +45,9 @@ const Home = () => {
     audioSource: null,
     isPlaying: false,
     isPaused: false,
-    isFinished: true
-  })));
+    isFinished: true,
+    currentTime: 0 // Track current playback position
+  })));  
   const [prompt, setPrompt] = useState('');
   const [visibleForm, setVisibleForm] = useState(''); // Track which form is visible
   const [errorMessage, setErrorMessage] = useState(''); // Track the error message
@@ -722,10 +723,19 @@ const Home = () => {
     try {
       const currentState = audioStates[index];
   
-      if (currentState.audioSource && currentState.isPaused) {
-        // Resume the paused audio
-        currentState.audioSource.start(0, audioContextRef.current.currentTime);
-        updateAudioState(index, { isPlaying: true, isPaused: false, isFinished: false });
+      if (currentState.isPaused) {
+        // Resume the paused audio from the stored currentTime
+        const newSource = audioContextRef.current.createBufferSource();
+        newSource.buffer = currentState.audioSource.buffer;
+        newSource.connect(audioContextRef.current.destination);
+  
+        newSource.start(0, currentState.currentTime); // Start from the paused position
+        updateAudioState(index, { audioSource: newSource, isPlaying: true, isPaused: false, isFinished: false });
+  
+        newSource.onended = () => {
+          updateAudioState(index, { isPlaying: false, isPaused: false, isFinished: true, currentTime: 0 });
+        };
+  
         return;
       }
   
@@ -739,32 +749,33 @@ const Home = () => {
       source.connect(audioContextRef.current.destination);
   
       source.start(0);
-      updateAudioState(index, { audioSource: source, isPlaying: true, isPaused: false, isFinished: false });
+      updateAudioState(index, { audioSource: source, isPlaying: true, isPaused: false, isFinished: false, currentTime: 0 });
   
       source.onended = () => {
-        updateAudioState(index, { isPlaying: false, isPaused: false, isFinished: true, audioSource: null });
+        updateAudioState(index, { isPlaying: false, isPaused: false, isFinished: true, currentTime: 0 });
       };
     } catch (error) {
       console.error('Error playing audio:', error);
     }
-  };
+  };  
   
   const pauseAudio = (index) => {
     const currentState = audioStates[index];
     if (currentState.audioSource) {
+      const elapsedTime = audioContextRef.current.currentTime - currentState.audioSource.startTime;
+      updateAudioState(index, { isPlaying: false, isPaused: true, currentTime: elapsedTime });
       currentState.audioSource.stop();
-      updateAudioState(index, { isPlaying: false, isPaused: true });
     }
-  };
+  };  
   
   const restartAudio = (url, index) => {
     const currentState = audioStates[index];
     if (currentState.audioSource) {
       currentState.audioSource.stop();
     }
-    updateAudioState(index, { isPlaying: false, isPaused: false, isFinished: true, audioSource: null });
+    updateAudioState(index, { isPlaying: false, isPaused: false, isFinished: true, currentTime: 0 });
     playAudio(url, index);
-  };
+  };  
 
   const updateAudioState = (index, newState) => {
     setAudioStates(prevStates => {
