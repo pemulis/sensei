@@ -40,6 +40,7 @@ const Home = () => {
   const { ready, wallets } = useWallets();
   const [isRecording, setIsRecording] = useState(false);
   const [audioPromptUrl, setAudioPromptUrl] = useState('');
+  const audioContextRef = useRef(null);
   const [prompt, setPrompt] = useState('');
   const [visibleForm, setVisibleForm] = useState(''); // Track which form is visible
   const [errorMessage, setErrorMessage] = useState(''); // Track the error message
@@ -118,18 +119,27 @@ const Home = () => {
     privyLogin();
   }, [authenticated, wallets]);
 
+  // useEffect(() => {
+  //   const setVolumeToMax = (event) => {
+  //     if (event.target.tagName === 'AUDIO') {
+  //       event.target.volume = 1.0; // Set volume to maximum
+  //       console.log('Volume set to maximum');
+  //     }
+  //   };
+  
+  //   document.addEventListener('play', setVolumeToMax, true);
+  
+  //   return () => {
+  //     document.removeEventListener('play', setVolumeToMax, true);
+  //   };
+  // }, []);
+
   useEffect(() => {
-    const setVolumeToMax = (event) => {
-      if (event.target.tagName === 'AUDIO') {
-        event.target.volume = 1.0; // Set volume to maximum
-        console.log('Volume set to maximum');
-      }
-    };
-  
-    document.addEventListener('play', setVolumeToMax, true);
-  
+    // Create a new AudioContext when the component mounts
+    audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
     return () => {
-      document.removeEventListener('play', setVolumeToMax, true);
+      // Close the AudioContext when the component unmounts
+      audioContextRef.current.close();
     };
   }, []);
 
@@ -697,7 +707,25 @@ const Home = () => {
       console.error('Error updating system prompt:', error);
       setErrorMessage(error.message);
     }
-  };    
+  };  
+  
+  const playAudio = async (url) => {
+    if (!audioContextRef.current) return;
+  
+    try {
+      const response = await fetch(url);
+      const arrayBuffer = await response.arrayBuffer();
+      const audioBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer);
+  
+      const source = audioContextRef.current.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(audioContextRef.current.destination);
+      
+      source.start(0);
+    } catch (error) {
+      console.error('Error playing audio:', error);
+    }
+  };  
 
   return (
     <div className={styles.container}>
@@ -720,11 +748,11 @@ const Home = () => {
                 <div className={styles.chatRole}>{message.role}</div>
                 <div className={styles.chatContent} dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(message.content) }}></div>
                 {message.audioUrl && (
-                  <audio 
-                    src={message.audioUrl} 
-                    controls 
-                    playsinline
-                  />
+                  <div>
+                    <button onClick={() => playAudio(message.audioUrl)}>
+                      Play Audio
+                    </button>
+                  </div>
                 )}
               </div>
             ))}
