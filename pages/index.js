@@ -41,9 +41,12 @@ const Home = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [audioPromptUrl, setAudioPromptUrl] = useState('');
   const [audioSource, setAudioSource] = useState(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
-  const [isFinished, setIsFinished] = useState(true); // Initially true because nothing has played
+  const [audioStates, setAudioStates] = useState(messages.map(() => ({
+    audioSource: null,
+    isPlaying: false,
+    isPaused: false,
+    isFinished: true
+  })));
   const [prompt, setPrompt] = useState('');
   const [visibleForm, setVisibleForm] = useState(''); // Track which form is visible
   const [errorMessage, setErrorMessage] = useState(''); // Track the error message
@@ -713,16 +716,16 @@ const Home = () => {
     }
   };  
   
-  const playAudio = async (url) => {
+  const playAudio = async (url, index) => {
     if (!audioContextRef.current) return;
   
     try {
-      if (audioSource && isPaused) {
+      const currentState = audioStates[index];
+  
+      if (currentState.audioSource && currentState.isPaused) {
         // Resume the paused audio
-        audioSource.start(0, audioContextRef.current.currentTime);
-        setIsPlaying(true);
-        setIsPaused(false);
-        setIsFinished(false);
+        currentState.audioSource.start(0, audioContextRef.current.currentTime);
+        updateAudioState(index, { isPlaying: true, isPaused: false, isFinished: false });
         return;
       }
   
@@ -734,41 +737,42 @@ const Home = () => {
       const source = audioContextRef.current.createBufferSource();
       source.buffer = audioBuffer;
       source.connect(audioContextRef.current.destination);
-      setAudioSource(source);
   
       source.start(0);
-      setIsPlaying(true);
-      setIsPaused(false);
-      setIsFinished(false);
+      updateAudioState(index, { audioSource: source, isPlaying: true, isPaused: false, isFinished: false });
   
       source.onended = () => {
-        setIsPlaying(false);
-        setIsPaused(false);
-        setIsFinished(true);
-        setAudioSource(null);
+        updateAudioState(index, { isPlaying: false, isPaused: false, isFinished: true, audioSource: null });
       };
     } catch (error) {
       console.error('Error playing audio:', error);
     }
   };
   
-  const pauseAudio = () => {
-    if (audioSource) {
-      audioSource.stop();
-      setIsPlaying(false);
-      setIsPaused(true);
+  const pauseAudio = (index) => {
+    const currentState = audioStates[index];
+    if (currentState.audioSource) {
+      currentState.audioSource.stop();
+      updateAudioState(index, { isPlaying: false, isPaused: true });
     }
+  };
+  
+  const restartAudio = (url, index) => {
+    const currentState = audioStates[index];
+    if (currentState.audioSource) {
+      currentState.audioSource.stop();
+    }
+    updateAudioState(index, { isPlaying: false, isPaused: false, isFinished: true, audioSource: null });
+    playAudio(url, index);
   };
 
-  const restartAudio = (url) => {
-    if (audioSource) {
-      audioSource.stop();
-    }
-    setIsPlaying(false);
-    setIsPaused(false);
-    setIsFinished(true);
-    playAudio(url);
-  };
+  const updateAudioState = (index, newState) => {
+    setAudioStates(prevStates => {
+      const updatedStates = [...prevStates];
+      updatedStates[index] = { ...updatedStates[index], ...newState };
+      return updatedStates;
+    });
+  }; 
   
   return (
     <div className={styles.container}>
@@ -792,15 +796,15 @@ const Home = () => {
                 <div className={styles.chatContent} dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(message.content) }}></div>
                 {message.audioUrl && (
                   <div>
-                    {isPlaying ? (
-                      <button onClick={pauseAudio}>Pause Audio</button>
+                    {audioStates[index].isPlaying ? (
+                      <button onClick={() => pauseAudio(index)}>Pause Audio</button>
                     ) : (
-                      <button onClick={() => playAudio(message.audioUrl)}>
-                        {isPaused ? 'Resume Audio' : 'Play Audio'}
+                      <button onClick={() => playAudio(message.audioUrl, index)}>
+                        {audioStates[index].isPaused ? 'Resume Audio' : 'Play Audio'}
                       </button>
                     )}
-                    {!isFinished && (
-                      <button onClick={() => restartAudio(message.audioUrl)}>
+                    {!audioStates[index].isFinished && (
+                      <button onClick={() => restartAudio(message.audioUrl, index)}>
                         Restart Audio
                       </button>
                     )}
