@@ -40,7 +40,10 @@ const Home = () => {
   const { ready, wallets } = useWallets();
   const [isRecording, setIsRecording] = useState(false);
   const [audioPromptUrl, setAudioPromptUrl] = useState('');
-  const audioContextRef = useRef(null);
+  const [audioSource, setAudioSource] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [isFinished, setIsFinished] = useState(true); // Initially true because nothing has played
   const [prompt, setPrompt] = useState('');
   const [visibleForm, setVisibleForm] = useState(''); // Track which form is visible
   const [errorMessage, setErrorMessage] = useState(''); // Track the error message
@@ -55,6 +58,7 @@ const Home = () => {
   const threadContainerRef = useRef();
   const recorderRef = useRef(null); // useRef for recorder
   const audioStreamRef = useRef(null); // useRef for audio stream
+  const audioContextRef = useRef(null);
 
   // Fetch the system prompt when the component mounts
   const fetchSystemPrompt = async () => {
@@ -713,6 +717,16 @@ const Home = () => {
     if (!audioContextRef.current) return;
   
     try {
+      if (audioSource && isPaused) {
+        // Resume the paused audio
+        audioSource.start(0, audioContextRef.current.currentTime);
+        setIsPlaying(true);
+        setIsPaused(false);
+        setIsFinished(false);
+        return;
+      }
+  
+      // Fetch and decode the audio if not already loaded
       const response = await fetch(url);
       const arrayBuffer = await response.arrayBuffer();
       const audioBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer);
@@ -720,13 +734,42 @@ const Home = () => {
       const source = audioContextRef.current.createBufferSource();
       source.buffer = audioBuffer;
       source.connect(audioContextRef.current.destination);
-      
+      setAudioSource(source);
+  
       source.start(0);
+      setIsPlaying(true);
+      setIsPaused(false);
+      setIsFinished(false);
+  
+      source.onended = () => {
+        setIsPlaying(false);
+        setIsPaused(false);
+        setIsFinished(true);
+        setAudioSource(null);
+      };
     } catch (error) {
       console.error('Error playing audio:', error);
     }
-  };  
+  };
+  
+  const pauseAudio = () => {
+    if (audioSource) {
+      audioSource.stop();
+      setIsPlaying(false);
+      setIsPaused(true);
+    }
+  };
 
+  const restartAudio = (url) => {
+    if (audioSource) {
+      audioSource.stop();
+    }
+    setIsPlaying(false);
+    setIsPaused(false);
+    setIsFinished(true);
+    playAudio(url);
+  };
+  
   return (
     <div className={styles.container}>
       <Head>
@@ -749,9 +792,18 @@ const Home = () => {
                 <div className={styles.chatContent} dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(message.content) }}></div>
                 {message.audioUrl && (
                   <div>
-                    <button onClick={() => playAudio(message.audioUrl)}>
-                      Play Audio
-                    </button>
+                    {isPlaying ? (
+                      <button onClick={pauseAudio}>Pause Audio</button>
+                    ) : (
+                      <button onClick={() => playAudio(message.audioUrl)}>
+                        {isPaused ? 'Resume Audio' : 'Play Audio'}
+                      </button>
+                    )}
+                    {!isFinished && (
+                      <button onClick={() => restartAudio(message.audioUrl)}>
+                        Restart Audio
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
